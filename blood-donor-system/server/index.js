@@ -1,14 +1,28 @@
-const express = require('express');
-const cors = require('cors');
+import dotenv from 'dotenv';
+dotenv.config();
+
+import express from 'express';
+import cors from 'cors';
+import connectDB from './config/db.js';
+
+// Import routes
+import donorRoutes from './routes/donorRoutes.js';
+import requestRoutes from './routes/requestRoutes.js';
 
 const app = express();
 const PORT = process.env.PORT || 5001;
+
+// Connect to database
+connectDB();
 
 // Middleware
 app.use(cors());
 app.use(express.json());
 
 // Routes
+app.use('/api/donors', donorRoutes);
+app.use('/api/requests', requestRoutes);
+
 app.get('/api/test', (req, res) => {
   res.json({ message: 'API working' });
 });
