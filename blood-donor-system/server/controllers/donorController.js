@@ -17,16 +17,21 @@ const getDonors = async (req, res) => {
 // @access  Public
 const registerDonor = async (req, res) => {
   try {
-    const { name, bloodGroup, phone, location, lastDonationDate, available } = req.body;
+    const { name, bloodGroup, age, phone, location, lastDonationDate, available } = req.body;
 
     // Validate required fields
-    if (!name || !bloodGroup || !phone || !location || location.lat === undefined || location.lng === undefined) {
+    if (!name || !bloodGroup || !age || !phone || !location || location.lat === undefined || location.lng === undefined) {
       return res.status(400).json({ message: 'Please provide all required fields including location properties (lat, lng)' });
+    }
+
+    if (age < 18 || age > 60) {
+      return res.status(400).json({ message: 'Donor must be between 18 and 60 years of age to register.' });
     }
 
     const donor = await Donor.create({
       name,
       bloodGroup,
+      age,
       phone,
       location,
       lastDonationDate,
