@@ -1,7 +1,9 @@
 import express from 'express';
 const router = express.Router();
-import { getRequests } from '../controllers/requestController.js';
+import { getRequests, createRequest } from '../controllers/requestController.js';
 
-router.route('/').get(getRequests);
+router.route('/')
+  .get(getRequests)
+  .post(createRequest);
 
 export default router;
