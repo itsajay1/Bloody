@@ -20,8 +20,8 @@ app.use(cors());
 app.use(express.json());
 
 // Routes
-app.use('/api/donors', donorRoutes);
-app.use('/api/requests', requestRoutes);
+app.use('/api/donor', donorRoutes);
+app.use('/api/request', requestRoutes);
 
 app.get('/api/test', (req, res) => {
   res.json({ message: 'API working' });
