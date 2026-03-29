@@ -8,7 +8,11 @@ function DonorCard({ donor }) {
       <div className="flex items-start justify-between mt-3 mb-5">
         <div className="flex flex-col">
           <h4 className="text-2xl font-bold text-gray-900 truncate tracking-tight">{donor.name}</h4>
-          <span className="text-sm font-medium text-gray-500 mt-1">Found locally within 10km</span>
+          <span className="text-sm font-medium text-gray-500 mt-1">
+            {donor.distance !== undefined 
+              ? `${donor.distance.toFixed(1)} km away` 
+              : 'Found locally within 10km'}
+          </span>
         </div>
         <div className="flex-shrink-0 bg-red-100 border border-red-200 text-red-700 shadow-sm w-12 h-12 flex items-center justify-center rounded-full text-xl font-black">
           {donor.bloodGroup}

@@ -1,32 +1,23 @@
 import React, { useState } from 'react';
 import DonorCard from '../components/DonorCard';
 import AlertMessage from '../components/ui/AlertMessage';
-import InputField from '../components/ui/InputField';
 import SelectField from '../components/ui/SelectField';
+import LocationPicker from '../components/ui/LocationPicker';
 
 function RequestBlood() {
-  const [formData, setFormData] = useState({
-    bloodGroup: '',
-    location: '', // User types text for now
-  });
+  const [bloodGroup, setBloodGroup] = useState('');
+  const [location, setLocation] = useState(null); // { lat, lng } from browser
   const [donors, setDonors] = useState([]);
-  const [status, setStatus] = useState(null); // { type: 'loading' | 'success' | 'error', message: '' }
+  const [status, setStatus] = useState(null);
   const [errors, setErrors] = useState({});
-
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-    if (errors[e.target.name]) {
-      setErrors({ ...errors, [e.target.name]: null });
-    }
-  };
 
   const validateForm = () => {
     const newErrors = {};
-    if (!formData.bloodGroup) {
+    if (!bloodGroup) {
       newErrors.bloodGroup = 'Please select a blood group';
     }
-    if (!formData.location.trim()) {
-      newErrors.location = 'Please provide a location constraint boundary';
+    if (!location) {
+      newErrors.location = 'Please share your location to find nearby donors';
     }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -40,11 +31,9 @@ function RequestBlood() {
     setDonors([]); // Reset previous matches
 
     try {
-      // The backend requires a lat/lng object for location validation.
-      // We pass a mock location for now to bypass the schema error alongside the requested text.
       const payload = {
-        bloodGroup: formData.bloodGroup,
-        location: { lat: 27.7172, lng: 85.3240 } // Mock location
+        bloodGroup,
+        location: { lat: location.lat, lng: location.lng },
       };
 
       const res = await fetch('/api/request', {
@@ -64,7 +53,7 @@ function RequestBlood() {
       setDonors(matched);
       
       if (matched.length === 0) {
-        setStatus({ type: 'error', message: `No available donors found for blood group ${formData.bloodGroup}. Request logged.` });
+        setStatus({ type: 'error', message: `No available donors found for blood group ${bloodGroup}. Request logged.` });
       } else {
         setStatus({ type: 'success', message: `Found ${matched.length} matching donor(s)! Request logged.` });
       }
@@ -87,8 +76,11 @@ function RequestBlood() {
             <SelectField
               label="Required Blood Group"
               name="bloodGroup"
-              value={formData.bloodGroup}
-              onChange={handleChange}
+              value={bloodGroup}
+              onChange={(e) => {
+                setBloodGroup(e.target.value);
+                if (errors.bloodGroup) setErrors((prev) => ({ ...prev, bloodGroup: null }));
+              }}
               error={errors.bloodGroup}
               options={[
                 { value: 'A+', label: 'A+' },
@@ -101,14 +93,13 @@ function RequestBlood() {
                 { value: 'O-', label: 'O-' },
               ]}
             />
-            
-            <InputField
-              label="Location"
-              name="location"
-              value={formData.location}
-              onChange={handleChange}
+
+            <LocationPicker
+              onLocation={(coords) => {
+                setLocation(coords);
+                if (errors.location) setErrors((prev) => ({ ...prev, location: null }));
+              }}
               error={errors.location}
-              placeholder="City, Hospital, or Landmark"
             />
           </div>
 

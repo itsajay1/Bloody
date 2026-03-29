@@ -36,7 +36,7 @@ function Login() {
     setStatus({ type: 'loading', message: 'Authenticating your credentials...' });
 
     try {
-      const res = await fetch('/api/donor/login', {
+      const res = await fetch('/api/users/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
@@ -48,10 +48,14 @@ function Login() {
         throw new Error(data.message || 'Failed to login');
       }
 
-      localStorage.setItem('donorInfo', JSON.stringify(data));
-      setStatus({ type: 'success', message: 'Access Granted. Redirecting to dashboard...' });
+      localStorage.setItem('userInfo', JSON.stringify(data));
+      setStatus({ type: 'success', message: `Welcome back, ${data.name}! Access Granted.` });
       
-      setTimeout(() => navigate('/profile'), 1200);
+      setTimeout(() => {
+        if (data.role === 'donor') navigate('/profile');
+        else if (data.role === 'hospital') navigate('/'); // Placeholder for hospital dash
+        else navigate('/'); // Placeholder for admin
+      }, 1200);
     } catch (error) {
       console.error(error);
       setStatus({ type: 'error', message: error.message });

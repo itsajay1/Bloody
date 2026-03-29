@@ -141,4 +141,28 @@ const addDonation = async (req, res, next) => {
   }
 };
 
-export { getDonors, registerDonor, loginDonor, getProfile, addDonation };
+// @desc    Toggle donor availability
+// @route   PUT /api/donor/availability
+// @access  Private
+const toggleAvailability = async (req, res, next) => {
+  try {
+    const donor = await Donor.findById(req.donor._id);
+
+    if (donor) {
+      donor.available = !donor.available;
+      await donor.save();
+
+      res.status(200).json({
+        message: `Availability updated to ${donor.available ? 'Available' : 'Unavailable'}`,
+        available: donor.available
+      });
+    } else {
+      res.status(404);
+      throw new Error('Donor not found');
+    }
+  } catch (error) {
+    next(error);
+  }
+};
+
+export { getDonors, registerDonor, loginDonor, getProfile, addDonation, toggleAvailability };

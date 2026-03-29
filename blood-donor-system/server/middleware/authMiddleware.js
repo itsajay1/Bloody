@@ -1,5 +1,5 @@
 import jwt from 'jsonwebtoken';
-import Donor from '../models/Donor.js';
+import User from '../models/User.js';
 
 const protect = async (req, res, next) => {
   let token;
@@ -12,11 +12,14 @@ const protect = async (req, res, next) => {
       const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret123');
 
       // Get user from token
-      req.donor = await Donor.findById(decoded.id).select('-password');
+      req.user = await User.findById(decoded.id).select('-password');
       
-      if (!req.donor) {
+      if (!req.user) {
         return res.status(401).json({ message: 'Not authorized, user not found' });
       }
+
+      // Backward compatibility for existing donor routes
+      req.donor = req.user;
 
       next();
     } catch (error) {
@@ -30,4 +33,16 @@ const protect = async (req, res, next) => {
   }
 };
 
-export { protect };
+// Role-based helper
+const authorize = (...roles) => {
+  return (req, res, next) => {
+    if (!req.user || !roles.includes(req.user.role)) {
+      return res.status(403).json({
+        message: `User role '${req.user?.role || 'null'}' is not authorized to access this route`
+      });
+    }
+    next();
+  };
+};
+
+export { protect, authorize };
