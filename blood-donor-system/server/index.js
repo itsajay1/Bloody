@@ -11,6 +11,8 @@ import { notFound, errorHandler } from './middleware/errorMiddleware.js';
 // Import routes
 import donorRoutes from './routes/donorRoutes.js';
 import requestRoutes from './routes/requestRoutes.js';
+import notificationRoutes from './routes/notificationRoutes.js';
+import userRoutes from './routes/userRoutes.js';
 
 // ESM-compatible __dirname (not available natively in ES Modules)
 const __filename = fileURLToPath(import.meta.url);
@@ -27,8 +29,10 @@ app.use(cors());
 app.use(express.json());
 
 // API Routes
+app.use('/api/users', userRoutes);
 app.use('/api/donor', donorRoutes);
 app.use('/api/request', requestRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 app.get('/api/test', (req, res) => {
   res.json({ message: 'API working' });

@@ -11,13 +11,18 @@ function Profile() {
 
   useEffect(() => {
     const fetchProfile = async () => {
-      const stored = localStorage.getItem('donorInfo');
+      const stored = localStorage.getItem('userInfo');
       if (!stored) {
         navigate('/login');
         return;
       }
       
-      const { token } = JSON.parse(stored);
+      const { token, role } = JSON.parse(stored);
+
+      if (role !== 'donor') {
+        navigate('/'); // Only donors have profiles for now
+        return;
+      }
 
       try {
         const res = await fetch('/api/donor/profile', {
@@ -35,7 +40,7 @@ function Profile() {
         setStatus(null);
       } catch (error) {
         console.error(error);
-        localStorage.removeItem('donorInfo');
+        localStorage.removeItem('userInfo');
         navigate('/login');
       }
     };
@@ -47,7 +52,7 @@ function Profile() {
     e.preventDefault();
     setLogStatus({ type: 'loading', message: 'Logging donation...' });
 
-    const stored = localStorage.getItem('donorInfo');
+    const stored = localStorage.getItem('userInfo');
     const { token } = stored ? JSON.parse(stored) : {};
 
     try {
@@ -73,6 +78,28 @@ function Profile() {
     }
   };
 
+  const handleToggleAvailability = async () => {
+    const stored = localStorage.getItem('donorInfo');
+    const { token } = stored ? JSON.parse(stored) : {};
+
+    try {
+      const res = await fetch('/api/donor/availability', {
+        method: 'PUT',
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+
+      if (!res.ok) throw new Error('Failed to update availability');
+
+      const data = await res.json();
+      setProfile(prev => ({ ...prev, available: data.available }));
+    } catch (error) {
+      console.error(error);
+      // Optional: show error message to user
+    }
+  };
+
   if (status) {
     return (
       <div className="flex justify-center mt-20">
@@ -95,9 +122,17 @@ function Profile() {
                 <span className="text-3xl font-black text-white">{profile.bloodGroup}</span>
               </div>
               <h2 className="text-2xl font-black text-gray-900 tracking-tight">{profile.name}</h2>
-              <span className={`mt-2 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider ${profile.available ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
-                {profile.available ? 'Available' : 'Unavailable'}
-              </span>
+              <div className="flex flex-col items-center justify-center">
+                <span className={`px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider mb-2 ${profile.available ? 'bg-green-100 text-green-700 border border-green-200' : 'bg-gray-100 text-gray-500 border border-gray-200'}`}>
+                  {profile.available ? 'Available' : 'Unavailable'}
+                </span>
+                <button 
+                  onClick={handleToggleAvailability}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 ${profile.available ? 'bg-green-600' : 'bg-gray-200'}`}
+                >
+                  <span className={`${profile.available ? 'translate-x-6' : 'translate-x-1'} inline-block h-4 w-4 transform rounded-full bg-white transition-transform`} />
+                </button>
+              </div>
             </div>
             
             <div className="space-y-5 bg-gray-50/50 p-6 rounded-2xl border border-gray-100">

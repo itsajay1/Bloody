@@ -1,15 +1,17 @@
 import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import NotificationBell from './NotificationBell';
 
 function Header() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // Simple local auth state check
-  const donorInfo = localStorage.getItem('donorInfo');
+  // Unified local auth state check
+  const userInfoStr = localStorage.getItem('userInfo');
+  const userInfo = userInfoStr ? JSON.parse(userInfoStr) : null;
 
   const handleLogout = () => {
-    localStorage.removeItem('donorInfo');
+    localStorage.removeItem('userInfo');
     navigate('/login');
   };
 
@@ -46,7 +48,7 @@ function Header() {
             {renderNavLink('/', 'Home')}
             {renderNavLink('/request', 'Emergency Request')}
             
-            {!donorInfo ? (
+            {!userInfo ? (
               <>
                 {renderNavLink('/login', 'Login')}
                 <Link 
@@ -58,7 +60,9 @@ function Header() {
               </>
             ) : (
               <>
-                {renderNavLink('/profile', 'Dashboard')}
+                {userInfo.role === 'donor' && renderNavLink('/profile', 'Dashboard')}
+                {userInfo.role === 'hospital' && renderNavLink('/hospital-dashboard', 'Hospital Panel')}
+                <NotificationBell />
                 <button 
                   onClick={handleLogout} 
                   className="px-4 py-2 rounded-lg font-medium transition-all duration-300 ease-in-out text-white/90 hover:bg-white/10 hover:text-white hover:-translate-y-0.5"

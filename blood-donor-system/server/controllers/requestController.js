@@ -1,5 +1,6 @@
 import Request from '../models/Request.js';
 import Donor from '../models/Donor.js';
+import Notification from '../models/Notification.js';
 
 // Haversine formula to calculate distance between two coordinates in kilometers
 const calculateDistance = (lat1, lon1, lat2, lon2) => {
@@ -50,37 +51,51 @@ const createRequest = async (req, res, next) => {
       available: true
     });
 
-    // Filter donors strictly within a 10 km radius and check 90 days eligibility
-    const matchingDonors = potentialDonors.filter(donor => {
-      // 1. Check location validity
-      if (!donor.location || typeof donor.location.lat !== 'number' || typeof donor.location.lng !== 'number') {
-        return false;
-      }
-      
-      // 2. Check 90 days eligibility
-      if (donor.lastDonationDate) {
-        const ninetyDaysInMillis = 90 * 24 * 60 * 60 * 1000;
-        const donationTime = new Date(donor.lastDonationDate).getTime();
-        const now = Date.now();
-        if (now - donationTime <= ninetyDaysInMillis) {
-          return false;
-        }
-      }
+    // 1. Map donors with distance, 2. Filter by 10km and eligibility, 3. Sort by distance, 4. Limit to 5
+    const matchingDonors = potentialDonors
+      .map(donor => {
+        // Calculate distance for all potential donors first
+        const distance = calculateDistance(
+          location.lat,
+          location.lng,
+          donor.location.lat,
+          donor.location.lng
+        );
+        return { ...donor.toObject(), distance };
+      })
+      .filter(donor => {
+        // Check 10km radius
+        if (donor.distance > 10) return false;
 
-      // 3. Check distance (Haversine formula <= 10km)
-      const distance = calculateDistance(
-        location.lat,
-        location.lng,
-        donor.location.lat,
-        donor.location.lng
-      );
-      
-      return distance <= 10;
-    });
+        // Check 90 days eligibility
+        if (donor.lastDonationDate) {
+          const ninetyDaysInMillis = 90 * 24 * 60 * 60 * 1000;
+          const donationTime = new Date(donor.lastDonationDate).getTime();
+          const now = Date.now();
+          if (now - donationTime <= ninetyDaysInMillis) {
+            return false;
+          }
+        }
+        return true;
+      })
+      .sort((a, b) => a.distance - b.distance) // Sort by nearest
+      .slice(0, 5); // Limit to top 5
+
+    // Create a notification for each matched donor
+    if (matchingDonors.length > 0) {
+      const notifications = matchingDonors.map((donor) => ({
+        donor: donor._id,
+        request: request._id,
+        bloodGroup,
+        message: `Urgent: Someone nearby needs ${bloodGroup} blood. You are one of the closest available donors (${donor.distance.toFixed(1)}km away).`,
+      }));
+      await Notification.insertMany(notifications);
+    }
 
     res.status(201).json({
       request,
-      matchingDonors
+      matchingDonors,
+      notified: matchingDonors.length,
     });
   } catch (error) {
     next(error);
