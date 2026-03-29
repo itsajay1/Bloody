@@ -4,6 +4,8 @@ import Header from './components/Header';
 import Home from './pages/Home';
 import RegisterDonor from './pages/RegisterDonor';
 import RequestBlood from './pages/RequestBlood';
+import Login from './pages/Login';
+import Profile from './pages/Profile';
 import './App.css';
 
 function App() {
@@ -16,6 +18,8 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/register" element={<RegisterDonor />} />
             <Route path="/request" element={<RequestBlood />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/profile" element={<Profile />} />
           </Routes>
         </main>
       </div>
