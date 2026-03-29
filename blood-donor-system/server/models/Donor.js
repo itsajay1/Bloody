@@ -5,6 +5,15 @@ const donorSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  email: {
+    type: String,
+    required: true,
+    unique: true,
+  },
+  password: {
+    type: String,
+    required: true,
+  },
   bloodGroup: {
     type: String,
     required: true,
@@ -30,6 +39,12 @@ const donorSchema = new mongoose.Schema({
   lastDonationDate: {
     type: Date,
   },
+  donationHistory: [
+    {
+      date: { type: Date, default: Date.now },
+      hospital: { type: String, required: true }
+    }
+  ],
   available: {
     type: Boolean,
     default: true,

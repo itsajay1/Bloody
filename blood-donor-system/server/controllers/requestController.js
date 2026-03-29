@@ -17,24 +17,25 @@ const calculateDistance = (lat1, lon1, lat2, lon2) => {
 // @desc    Get all blood requests
 // @route   GET /api/request
 // @access  Public
-const getRequests = async (req, res) => {
+const getRequests = async (req, res, next) => {
   try {
     const requests = await Request.find({});
     res.json(requests);
   } catch (error) {
-    res.status(500).json({ message: 'Server Error', error: error.message });
+    next(error);
   }
 };
 
 // @desc    Create blood request and find matching donors within 10km
 // @route   POST /api/request
 // @access  Public
-const createRequest = async (req, res) => {
+const createRequest = async (req, res, next) => {
   try {
     const { bloodGroup, location } = req.body;
 
     if (!bloodGroup || !location || location.lat === undefined || location.lng === undefined) {
-      return res.status(400).json({ message: 'Please provide bloodGroup and location (lat, lng)' });
+      res.status(400);
+      throw new Error('Please provide bloodGroup and location (lat, lng)');
     }
 
     // Save the request
@@ -82,7 +83,7 @@ const createRequest = async (req, res) => {
       matchingDonors
     });
   } catch (error) {
-    res.status(500).json({ message: 'Server Error', error: error.message });
+    next(error);
   }
 };
 
