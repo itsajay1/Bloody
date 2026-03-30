@@ -18,9 +18,6 @@ const protect = async (req, res, next) => {
         return res.status(401).json({ message: 'Not authorized, user not found' });
       }
 
-      // Backward compatibility for existing donor routes
-      req.donor = req.user;
-
       next();
     } catch (error) {
       console.error(error);

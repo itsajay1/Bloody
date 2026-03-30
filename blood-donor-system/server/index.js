@@ -25,7 +25,11 @@ const PORT = process.env.PORT || 5001;
 connectDB();
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: '*', // Allow all origins for development bridge
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 app.use(express.json());
 
 // API Routes
@@ -36,6 +40,15 @@ app.use('/api/notifications', notificationRoutes);
 
 app.get('/api/test', (req, res) => {
   res.json({ message: 'API working' });
+});
+
+app.get('/api/health', (req, res) => {
+  res.json({ 
+    status: 'healthy', 
+    timestamp: new Date(),
+    ip: req.ip,
+    headers: req.headers
+  });
 });
 
 // --- Serve React frontend in production ---
@@ -57,6 +70,6 @@ app.use(notFound);
 app.use(errorHandler);
 
 // Start server
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server is running on port ${PORT}`);
 });

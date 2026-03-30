@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AlertMessage from '../components/ui/AlertMessage';
 import InputField from '../components/ui/InputField';
 import SelectField from '../components/ui/SelectField';
 import LocationPicker from '../components/ui/LocationPicker';
+import { useAuth } from '../context/AuthContext';
 
 function RegisterDonor() {
   const [role, setRole] = useState('donor');
@@ -26,6 +27,15 @@ function RegisterDonor() {
   const [errors, setErrors] = useState({});
   const [location, setLocation] = useState(null); // { lat, lng } from browser
   const navigate = useNavigate();
+  const { user, login } = useAuth();
+
+  // Auto-redirect if already logged in
+  useEffect(() => {
+    if (user) {
+      if (user.role === 'donor') navigate('/profile');
+      else navigate('/');
+    }
+  }, [user, navigate]);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -99,8 +109,7 @@ function RegisterDonor() {
         throw new Error(data.message || 'Failed to register');
       }
 
-      localStorage.setItem('userInfo', JSON.stringify(data));
-
+      login(data);
       setStatus({ type: 'success', message: `Successfully registered as ${role}! Redirecting...` });
       
       setTimeout(() => navigate(role === 'donor' ? '/profile' : '/'), 1500);
@@ -111,34 +120,42 @@ function RegisterDonor() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-12 animate-fade-in-up">
-      <div className="bg-white/90 backdrop-blur-2xl p-8 sm:p-12 rounded-[2.5rem] shadow-[0_20px_60px_rgba(0,_0,_0,_0.05)] border border-white relative overflow-hidden">
+    <div className="max-w-4xl mx-auto px-6 py-24 animate-fade-in-up safe-pt">
+      <div className="glass p-10 sm:p-16 rounded-[3.5rem] shadow-premium border-white/60 relative overflow-hidden">
         
         {/* Soft decorative background flares */}
-        <div className="absolute top-0 right-0 -mr-24 -mt-24 w-64 h-64 rounded-full bg-red-100 opacity-60 mix-blend-multiply blur-3xl z-0 pointer-events-none"></div>
-        <div className="absolute bottom-0 left-0 -ml-24 -mb-24 w-64 h-64 rounded-full bg-orange-50 opacity-60 mix-blend-multiply blur-3xl z-0 pointer-events-none"></div>
+        <div className="absolute -top-24 -right-24 w-80 h-80 rounded-full bg-red-100/40 opacity-60 mix-blend-multiply blur-3xl z-0 pointer-events-none"></div>
+        <div className="absolute -bottom-24 -left-24 w-80 h-80 rounded-full bg-orange-100/40 opacity-60 mix-blend-multiply blur-3xl z-0 pointer-events-none"></div>
         
         <div className="relative z-10">
-          <div className="text-center mb-10">
-            <h2 className="text-4xl sm:text-5xl font-black text-gray-900 mb-4 tracking-tight">
+          <div className="text-center mb-16">
+            <div className="w-16 h-16 bg-red-600 text-white rounded-[1.25rem] flex items-center justify-center mb-10 shadow-2xl shadow-red-500/30 mx-auto transform hover:rotate-6 transition-transform">
+              <svg className="w-9 h-9" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2c-4.42 0-8 3.58-8 8 0 5.42 7.17 11.42 7.48 11.67.15.12.33.18.52.18s.37-.06.52-.18c.31-.25 7.48-6.25 7.48-11.67 0-4.42-3.58-8-8-8z" />
+              </svg>
+            </div>
+            <h2 className="text-5xl sm:text-7xl font-black text-gray-900 mb-4 tracking-tighter leading-none animate-float">
               {role === 'donor' ? 'Become a Hero' : 'Hospital Portal'}
             </h2>
-            <p className="text-gray-500 font-medium text-lg">
-              {role === 'donor' ? 'Join the registry and give the gift of life.' : 'Register your medical facility to request blood.'}
+            <p className="text-gray-500 font-medium text-lg leading-relaxed max-w-xl mx-auto">
+              {role === 'donor' ? 'Join the global registry and give the ultimate gift of life.' : 'Register your medical facility to request blood instantly.'}
             </p>
           </div>
 
-          {/* Role Selection Tabs */}
-          <div className="flex p-1 bg-gray-100 rounded-2xl mb-10 max-w-sm mx-auto border border-gray-200 shadow-inner">
+          {/* Premium Role Selection Toggle */}
+          <div className="relative flex p-1.5 bg-gray-100 rounded-[2rem] mb-16 max-w-xs mx-auto border border-gray-200 shadow-inner group">
+            <div 
+              className={`absolute top-1.5 bottom-1.5 w-[calc(50%-6px)] bg-white rounded-[1.75rem] shadow-xl transition-all duration-500 ease-out ${role === 'hospital' ? 'translate-x-[calc(100%+6px)]' : 'translate-x-0'}`}
+            ></div>
             <button
               onClick={() => setRole('donor')}
-              className={`flex-1 py-3 px-4 rounded-xl text-sm font-black transition-all duration-300 ${role === 'donor' ? 'bg-white text-red-600 shadow-md' : 'text-gray-500 hover:text-gray-700'}`}
+              className={`relative z-10 flex-1 py-3 px-6 rounded-[1.75rem] text-[11px] font-black uppercase tracking-widest transition-all duration-300 ${role === 'donor' ? 'text-red-600' : 'text-gray-400 hover:text-gray-600'}`}
             >
               Donor
             </button>
             <button
               onClick={() => setRole('hospital')}
-              className={`flex-1 py-3 px-4 rounded-xl text-sm font-black transition-all duration-300 ${role === 'hospital' ? 'bg-white text-red-600 shadow-md' : 'text-gray-500 hover:text-gray-700'}`}
+              className={`relative z-10 flex-1 py-3 px-6 rounded-[1.75rem] text-[11px] font-black uppercase tracking-widest transition-all duration-300 ${role === 'hospital' ? 'text-red-600' : 'text-gray-400 hover:text-gray-600'}`}
             >
               Hospital
             </button>
@@ -146,35 +163,35 @@ function RegisterDonor() {
           
           <AlertMessage status={status} />
 
-          <form onSubmit={handleSubmit} className="space-y-8" noValidate>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-              <InputField label="Name / Username" name="name" value={formData.name} onChange={handleChange} error={errors.name} placeholder="Unique identifier" />
-              <InputField label="Email Address" type="email" name="email" value={formData.email} onChange={handleChange} error={errors.email} placeholder="hero@example.com" />
-              <InputField label="Password" type="password" name="password" value={formData.password} onChange={handleChange} error={errors.password} placeholder="••••••••" className="tracking-widest" />
+          <form onSubmit={handleSubmit} className="space-y-12" noValidate>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-10 font-bold">
+              <InputField label="Full Name" name="name" value={formData.name} onChange={handleChange} error={errors.name} placeholder="Nexus Commander" />
+              <InputField label="Email" type="email" name="email" value={formData.email} onChange={handleChange} error={errors.email} placeholder="hero@lifeline.com" />
+              <InputField label="Secret Password" type="password" name="password" value={formData.password} onChange={handleChange} error={errors.password} placeholder="••••••••" className="tracking-widest" />
               
               {role === 'hospital' && (
                 <>
-                  <InputField label="Hospital Name" name="hospitalName" value={formData.hospitalName} onChange={handleChange} error={errors.hospitalName} placeholder="City General Hospital" />
-                  <InputField label="Hospital Address" name="address" value={formData.address} onChange={handleChange} error={errors.address} placeholder="123 Medical Dr, City" />
-                  <InputField label="Contact Person" name="contactPerson" value={formData.contactPerson} onChange={handleChange} error={errors.contactPerson} placeholder="Dr. Smith" />
-                  <InputField label="Contact Number" type="tel" name="phone" value={formData.phone} onChange={handleChange} error={errors.phone} placeholder="+1 (234) 567-8900" />
+                  <InputField label="Hospital Name" name="hospitalName" value={formData.hospitalName} onChange={handleChange} error={errors.hospitalName} placeholder="City General" />
+                  <InputField label="Full Address" name="address" value={formData.address} onChange={handleChange} error={errors.address} placeholder="123 Medical Dr" />
+                  <InputField label="In-charge Person" name="contactPerson" value={formData.contactPerson} onChange={handleChange} error={errors.contactPerson} placeholder="Dr. Smith" />
+                  <InputField label="Official Number" type="tel" name="phone" value={formData.phone} onChange={handleChange} error={errors.phone} placeholder="+1 (234) 567" />
                 </>
               )}
 
               {role === 'donor' && (
                 <>
-                  <InputField label="Phone Number" type="tel" name="phone" value={formData.phone} onChange={handleChange} error={errors.phone} placeholder="+1 (234) 567-8900" />
-                  <SelectField label="Blood Group" name="bloodGroup" value={formData.bloodGroup} onChange={handleChange} error={errors.bloodGroup} options={[
-                    { value: 'A+', label: 'A Positive (A+)' },
-                    { value: 'A-', label: 'A Negative (A-)' },
-                    { value: 'B+', label: 'B Positive (B+)' },
-                    { value: 'B-', label: 'B Negative (B-)' },
-                    { value: 'AB+', label: 'AB Positive (AB+)' },
-                    { value: 'AB-', label: 'AB Negative (AB-)' },
-                    { value: 'O+', label: 'O Positive (O+)' },
-                    { value: 'O-', label: 'O Negative (O-)' },
+                  <InputField label="Contact Number" type="tel" name="phone" value={formData.phone} onChange={handleChange} error={errors.phone} placeholder="+1 (234) 567" />
+                  <SelectField label="Blood Type" name="bloodGroup" value={formData.bloodGroup} onChange={handleChange} error={errors.bloodGroup} options={[
+                    { value: 'A+', label: 'A Positive' },
+                    { value: 'A-', label: 'A Negative' },
+                    { value: 'B+', label: 'B Positive' },
+                    { value: 'B-', label: 'B Negative' },
+                    { value: 'AB+', label: 'AB Positive' },
+                    { value: 'AB-', label: 'AB Negative' },
+                    { value: 'O+', label: 'O Positive' },
+                    { value: 'O-', label: 'O Negative' },
                   ]} />
-                  <InputField label="Age" type="number" name="age" min="18" max="60" value={formData.age} onChange={handleChange} error={errors.age} placeholder="25" />
+                  <InputField label="Your Age" type="number" name="age" min="18" max="60" value={formData.age} onChange={handleChange} error={errors.age} placeholder="25" />
                   <div className="md:col-span-2">
                     <LocationPicker
                       onLocation={(coords) => {
@@ -189,31 +206,27 @@ function RegisterDonor() {
             </div>
 
             {role === 'donor' && (
-              <div className="p-6 bg-red-50/50 rounded-2xl border border-red-100">
-                <label className="block text-xs font-bold text-red-800 uppercase tracking-wider mb-3">Last Donation Date (Optional)</label>
-                <input
-                  type="date"
-                  name="lastDonationDate"
-                  value={formData.lastDonationDate}
-                  onChange={handleChange}
-                  className="w-full md:w-1/2 px-5 py-4 bg-white border border-red-200 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all font-medium text-gray-900 cursor-pointer"
-                />
+              <div className="p-10 bg-gray-50/50 rounded-[2.5rem] border border-gray-100/50 space-y-8">
+                <div>
+                  <label className="block text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-4 ml-1">Last Vital Contribution (Optional)</label>
+                  <input
+                    type="date"
+                    name="lastDonationDate"
+                    value={formData.lastDonationDate}
+                    onChange={handleChange}
+                    className="w-full md:w-1/2 px-6 py-4 bg-white/80 border border-gray-100 rounded-2xl focus:ring-4 focus:ring-red-500/10 focus:border-red-500 transition-all font-black text-gray-900 cursor-pointer shadow-sm"
+                  />
+                </div>
                 
-                <div className="flex items-center mt-6 p-4 bg-white rounded-xl border border-red-100 shadow-sm cursor-pointer hover:border-red-300 transition-colors" onClick={() => setFormData(p => ({ ...p, available: !p.available }))}>
-                  <div className="relative flex items-center">
-                    <input
-                      type="checkbox"
-                      name="available"
-                      checked={formData.available}
-                      readOnly
-                      className="h-6 w-6 text-red-600 border-gray-300 rounded focus:ring-red-500 cursor-pointer"
-                    />
+                <div className="flex items-center p-6 bg-white rounded-2xl border border-gray-100 shadow-premium cursor-pointer hover:border-red-200 transition-all group/check active:scale-[0.98]" onClick={() => setFormData(p => ({ ...p, available: !p.available }))}>
+                  <div className={`w-6 h-6 rounded-lg border-2 transition-all flex items-center justify-center ${formData.available ? 'bg-red-600 border-red-600' : 'bg-transparent border-gray-200 group-hover/check:border-red-400'}`}>
+                    {formData.available && <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="4" d="M5 13l4 4L19 7" /></svg>}
                   </div>
-                  <div className="ml-4">
-                    <label className="text-sm font-bold text-gray-900 cursor-pointer">
-                      I am currently available to donate blood
+                  <div className="ml-6">
+                    <label className="text-sm font-black text-gray-900 cursor-pointer tracking-tight">
+                      Ready for Active Duty
                     </label>
-                    <p className="text-xs text-gray-500 mt-0.5">Keep this checked so emergency requesters can contact you.</p>
+                    <p className="text-xs text-gray-400 mt-0.5 font-medium">Allow emergency requesters to discover your profile.</p>
                   </div>
                 </div>
               </div>
@@ -222,10 +235,10 @@ function RegisterDonor() {
             <button
               type="submit"
               disabled={status?.type === 'loading' || status?.type === 'success'}
-              className="w-full group bg-gradient-to-r from-red-600 to-red-800 text-white font-black py-5 px-6 rounded-2xl hover:from-red-700 hover:to-red-900 shadow-[0_10px_20px_rgba(220,_38,_38,_0.2)] hover:shadow-[0_15px_30px_rgba(220,_38,_38,_0.4)] transform transition-all duration-300 hover:-translate-y-1 mt-8 text-lg flex items-center justify-center gap-3 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none"
+              className="w-full h-20 group bg-gray-900 text-white font-black uppercase tracking-[0.2em] text-[10px] rounded-[2rem] hover:bg-red-600 shadow-2xl hover:shadow-red-500/40 transform transition-all duration-500 hover:-translate-y-1 mt-12 flex items-center justify-center gap-4 disabled:opacity-70 disabled:cursor-not-allowed active:scale-95"
             >
-              <span>{status?.type === 'loading' ? 'Establishing Secure Profile...' : 'Complete Profile & Join'}</span>
-              <svg className="w-6 h-6 group-hover:block transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+              <span>{status?.type === 'loading' ? 'Intercepting Identity...' : 'Confirm Registration'}</span>
+              <svg className="w-5 h-5 group-hover:translate-x-2 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
             </button>
           </form>
         </div>

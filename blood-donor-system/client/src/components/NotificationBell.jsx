@@ -94,21 +94,21 @@ function NotificationBell() {
       {/* Bell Button */}
       <button
         onClick={() => setOpen((o) => !o)}
-        className="relative p-2 rounded-lg text-white/90 hover:bg-white/10 hover:text-white transition-all duration-200"
+        className="relative p-2 rounded-xl text-gray-500 hover:bg-red-50 hover:text-red-600 transition-all duration-300 group"
         aria-label="Notifications"
       >
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg className="w-6 h-6 transform group-hover:rotate-12 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
-            strokeWidth="2"
+            strokeWidth="2.5"
             d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
           />
         </svg>
 
         {/* Unread badge */}
         {unreadCount > 0 && (
-          <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] bg-yellow-400 text-gray-900 text-[10px] font-black rounded-full flex items-center justify-center px-1 animate-pulse">
+          <span className="absolute top-1.5 right-1.5 min-w-[16px] h-[16px] bg-red-600 text-white text-[9px] font-black rounded-full flex items-center justify-center px-1 shadow-lg shadow-red-500/40 animate-pulse">
             {unreadCount > 9 ? '9+' : unreadCount}
           </span>
         )}
@@ -116,14 +116,14 @@ function NotificationBell() {
 
       {/* Dropdown */}
       {open && (
-        <div className="absolute right-0 mt-2 w-80 bg-white rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,0.15)] border border-gray-100 overflow-hidden z-50 animate-fade-in-up">
+        <div className="absolute right-0 mt-3 w-80 glass rounded-[2rem] shadow-premium overflow-hidden z-50 animate-fade-in-up border-white/60">
           {/* Header */}
-          <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 bg-gray-50">
-            <h3 className="font-black text-gray-900 text-sm">Notifications</h3>
+          <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-white/40">
+            <h3 className="font-black text-gray-900 text-xs uppercase tracking-widest">Notifications</h3>
             {unreadCount > 0 && (
               <button
                 onClick={markAllAsRead}
-                className="text-xs font-semibold text-red-600 hover:text-red-700 transition-colors"
+                className="text-[10px] font-black text-red-600 hover:text-red-700 transition-colors uppercase tracking-wider"
               >
                 Mark all read
               </button>
@@ -131,45 +131,46 @@ function NotificationBell() {
           </div>
 
           {/* List */}
-          <div className="max-h-80 overflow-y-auto divide-y divide-gray-50">
+          <div className="max-h-80 overflow-y-auto divide-y divide-gray-50/50">
             {notifications.length === 0 ? (
-              <div className="py-10 text-center">
-                <svg className="w-8 h-8 text-gray-300 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-                </svg>
-                <p className="text-sm text-gray-400 font-medium">No notifications yet</p>
+              <div className="py-12 text-center">
+                <div className="w-12 h-12 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                   <svg className="w-6 h-6 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                  </svg>
+                </div>
+                <p className="text-xs text-gray-400 font-bold uppercase tracking-wider">Peaceful Silence</p>
               </div>
             ) : (
               notifications.map((n) => (
                 <div
                   key={n._id}
                   onClick={() => !n.read && markAsRead(n._id)}
-                  className={`px-4 py-3 cursor-pointer transition-colors hover:bg-gray-50 ${
-                    !n.read ? 'bg-red-50' : 'bg-white'
+                  className={`px-6 py-4 cursor-pointer transition-all duration-300 hover:bg-white/60 ${
+                    !n.read ? 'bg-red-50/30' : 'bg-transparent'
                   }`}
                 >
-                  <div className="flex items-start gap-3">
-                    {/* Blood drop icon */}
-                    <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center mt-0.5 ${
-                      !n.read ? 'bg-red-100' : 'bg-gray-100'
+                  <div className="flex items-start gap-4">
+                    <div className={`flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center mt-0.5 border transition-all ${
+                      !n.read ? 'bg-white border-red-100 shadow-sm' : 'bg-gray-50 border-gray-100'
                     }`}>
-                      <svg className={`w-4 h-4 ${!n.read ? 'text-red-600' : 'text-gray-400'}`} fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
+                      <svg className={`w-5 h-5 ${!n.read ? 'text-red-500 animate-pulse' : 'text-gray-300'}`} fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" />
                       </svg>
                     </div>
                     <div className="flex-1 min-w-0">
-                      {/* Blood group badge */}
-                      <span className="inline-block px-2 py-0.5 bg-red-600 text-white text-[10px] font-black rounded-full mb-1">
-                        {n.bloodGroup}
-                      </span>
-                      <p className={`text-xs leading-relaxed ${!n.read ? 'text-gray-800 font-semibold' : 'text-gray-500'}`}>
+                      <div className="flex justify-between items-center mb-1">
+                        <span className="inline-block px-2 py-0.5 bg-gray-900 text-white text-[9px] font-black rounded-lg uppercase tracking-wider">
+                          {n.bloodGroup}
+                        </span>
+                        <p className="text-[9px] font-bold text-gray-300 uppercase tracking-widest">{formatTime(n.createdAt)}</p>
+                      </div>
+                      <p className={`text-xs leading-relaxed tracking-tight ${!n.read ? 'text-gray-900 font-bold' : 'text-gray-500 font-medium'}`}>
                         {n.message}
                       </p>
-                      <p className="text-[10px] text-gray-400 mt-1">{formatTime(n.createdAt)}</p>
                     </div>
-                    {/* Unread dot */}
                     {!n.read && (
-                      <div className="flex-shrink-0 w-2 h-2 bg-red-500 rounded-full mt-1.5" />
+                      <div className="flex-shrink-0 w-2 h-2 bg-red-500 rounded-full mt-2 shadow-[0_0_10px_rgba(239,68,68,0.5)]" />
                     )}
                   </div>
                 </div>
