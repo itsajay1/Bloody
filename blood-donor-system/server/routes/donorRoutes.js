@@ -2,8 +2,6 @@ import express from 'express';
 const router = express.Router();
 import { 
   getDonors, 
-  registerDonor, 
-  loginDonor, 
   getProfile, 
   addDonation,
   toggleAvailability 
@@ -11,8 +9,7 @@ import {
 import { protect } from '../middleware/authMiddleware.js';
 
 router.route('/').get(getDonors);
-router.route('/register').post(registerDonor);
-router.route('/login').post(loginDonor);
+// Legacy donor routes removed in favor of unified user routes
 
 router.route('/profile').get(protect, getProfile);
 router.route('/donate').post(protect, addDonation);
