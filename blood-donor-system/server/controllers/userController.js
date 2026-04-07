@@ -3,6 +3,7 @@ import Donor from '../models/Donor.js';
 import Hospital from '../models/Hospital.js';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import { successResponse } from '../utils/responseWrapper.js';
 
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET || 'secret123', {
@@ -11,7 +12,7 @@ const generateToken = (id) => {
 };
 
 // @desc    Register a new user (any role)
-// @route   POST /api/users/register
+// @route   POST /api/auth/register
 // @access  Public
 const registerUser = async (req, res, next) => {
   try {
@@ -82,13 +83,13 @@ const registerUser = async (req, res, next) => {
         });
       }
 
-      res.status(201).json({
+      successResponse(res, 'User registered successfully', {
         _id: user._id,
         name: user.name,
         email: user.email,
         role: user.role,
         token: generateToken(user._id)
-      });
+      }, 201);
     } else {
       res.status(400);
       throw new Error('Invalid user data provided');
@@ -99,7 +100,7 @@ const registerUser = async (req, res, next) => {
 };
 
 // @desc    Auth user & get token
-// @route   POST /api/users/login
+// @route   POST /api/auth/login
 // @access  Public
 const loginUser = async (req, res, next) => {
   try {
@@ -108,7 +109,7 @@ const loginUser = async (req, res, next) => {
     const user = await User.findOne({ email });
 
     if (user && (await bcrypt.compare(password, user.password))) {
-      res.json({
+      successResponse(res, 'Login successful', {
         _id: user._id,
         name: user.name,
         email: user.email,

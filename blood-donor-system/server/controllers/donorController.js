@@ -1,12 +1,6 @@
 import Donor from '../models/Donor.js';
-import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
-
-const generateToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET || 'secret123', {
-    expiresIn: '30d',
-  });
-};
+import User from '../models/User.js';
+import { successResponse } from '../utils/responseWrapper.js';
 
 // @desc    Get all donors
 // @route   GET /api/donor
@@ -14,15 +8,65 @@ const generateToken = (id) => {
 const getDonors = async (req, res, next) => {
   try {
     const donors = await Donor.find({}).select('-password');
-    res.json(donors);
+    successResponse(res, 'Donors fetched successfully', donors);
   } catch (error) {
     next(error);
   }
 };
 
-// Legacy donor registration removed in favor of unified userController.js
+// @desc    Create or update donor profile
+// @route   POST /api/donor
+// @access  Private
+const createDonor = async (req, res, next) => {
+  try {
+    const { bloodGroup, phone, age, location, lastDonationDate } = req.body;
 
-// Legacy donor login removed in favor of unified userController.js
+    // Check if donor profile already exists for this user
+    let donor = await Donor.findOne({ user: req.user._id });
+
+    if (donor) {
+      // Update existing donor
+      donor.bloodGroup = bloodGroup || donor.bloodGroup;
+      donor.phone = phone || donor.phone;
+      donor.age = age || donor.age;
+      donor.location = location || donor.location;
+      donor.lastDonationDate = lastDonationDate || donor.lastDonationDate;
+      
+      await donor.save();
+      successResponse(res, 'Donor profile updated successfully', donor);
+    } else {
+      // Create new donor profile
+      // We need name and email from the user account if not provided
+      const user = await User.findById(req.user._id);
+      
+      if (!bloodGroup || !phone || !age || !location) {
+        res.status(400);
+        throw new Error('Please provide bloodGroup, phone, age, and location');
+      }
+
+      donor = await Donor.create({
+        user: req.user._id,
+        name: user.name,
+        email: user.email,
+        bloodGroup,
+        phone,
+        age,
+        location,
+        lastDonationDate
+      });
+
+      // Also ensure user role is 'donor'
+      if (user.role !== 'donor') {
+        user.role = 'donor';
+        await user.save();
+      }
+
+      successResponse(res, 'Donor profile created successfully', donor, 201);
+    }
+  } catch (error) {
+    next(error);
+  }
+};
 
 // @desc    Get donor profile
 // @route   GET /api/donor/profile
@@ -31,7 +75,7 @@ const getProfile = async (req, res, next) => {
   try {
     const donor = await Donor.findOne({ user: req.user._id }).select('-password');
     if (donor) {
-      res.json(donor);
+      successResponse(res, 'Donor profile fetched successfully', donor);
     } else {
       res.status(404);
       throw new Error('Donor not found');
@@ -61,7 +105,7 @@ const addDonation = async (req, res, next) => {
       donor.lastDonationDate = newDonationDate;
       await donor.save();
 
-      res.status(200).json({ message: 'Donation added successfully', donor });
+      successResponse(res, 'Donation added successfully', donor);
     } else {
       res.status(404);
       throw new Error('Donor not found');
@@ -82,8 +126,7 @@ const toggleAvailability = async (req, res, next) => {
       donor.available = !donor.available;
       await donor.save();
 
-      res.status(200).json({
-        message: `Availability updated to ${donor.available ? 'Available' : 'Unavailable'}`,
+      successResponse(res, `Availability updated to ${donor.available ? 'Available' : 'Unavailable'}`, {
         available: donor.available
       });
     } else {
@@ -95,4 +138,34 @@ const toggleAvailability = async (req, res, next) => {
   }
 };
 
-export { getDonors, getProfile, addDonation, toggleAvailability };
+// @desc    Store FCM token for push notifications
+// @route   POST /api/donor/fcm-token
+// @access  Private
+const saveFcmToken = async (req, res, next) => {
+  try {
+    const { token } = req.body;
+    
+    if (!token) {
+      res.status(400);
+      throw new Error('FCM token is required');
+    }
+
+    const donor = await Donor.findOne({ user: req.user._id });
+    
+    if (!donor) {
+      res.status(404);
+      throw new Error('Donor not found');
+    }
+    
+    if (!donor.fcmTokens.includes(token)) {
+      donor.fcmTokens.push(token);
+      await donor.save();
+    }
+    
+    successResponse(res, 'FCM token saved successfully', null);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export { getDonors, createDonor, getProfile, addDonation, toggleAvailability, saveFcmToken };

@@ -16,7 +16,9 @@ function InputField({ label, name, type = 'text', value, onChange, error, placeh
           min={min}
           max={max}
           className={`w-full px-5 py-4 bg-white/50 backdrop-blur-sm border rounded-[1.25rem] focus:ring-4 focus:ring-red-500/10 focus:outline-none transition-all duration-300 font-semibold text-gray-900 placeholder-gray-300 ${
-            error ? 'border-red-400 bg-red-50/10' : 'border-gray-100 focus:border-red-500 shadow-sm hover:border-gray-200'
+            error 
+              ? 'border-red-400 bg-red-50/10' 
+              : 'border-gray-100 focus:border-red-500 shadow-sm hover:border-gray-200'
           } ${className}`}
         />
         {error && (
@@ -26,7 +28,7 @@ function InputField({ label, name, type = 'text', value, onChange, error, placeh
         )}
       </div>
       {error && (
-        <p className="text-red-500 text-[11px] font-bold mt-2 ml-1 animate-fade-in-up">{error}</p>
+        <p className="form-error">{error}</p>
       )}
     </div>
   );

@@ -12,7 +12,9 @@ function SelectField({ label, name, value, onChange, error, options = [], placeh
           value={value}
           onChange={onChange}
           className={`w-full px-5 py-4 bg-white/50 backdrop-blur-sm border rounded-[1.25rem] focus:ring-4 focus:ring-red-500/10 focus:outline-none transition-all duration-300 font-bold text-gray-900 appearance-none cursor-pointer ${
-            error ? 'border-red-400 bg-red-50/10' : 'border-gray-100 focus:border-red-500 shadow-sm hover:border-gray-200'
+            error 
+              ? 'border-red-400 bg-red-50/10' 
+              : 'border-gray-100 focus:border-red-500 shadow-sm hover:border-gray-200'
           }`}
         >
           <option value="" disabled className="text-gray-400">

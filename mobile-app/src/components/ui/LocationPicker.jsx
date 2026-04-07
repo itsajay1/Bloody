@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { Geolocation } from '@capacitor/geolocation';
+import { Capacitor } from '@capacitor/core';
 
 const GEO_ERRORS = {
   1: 'Location permission was denied. Please allow access in your browser settings and try again.',
@@ -11,32 +13,61 @@ function LocationPicker({ onLocation, error: externalError }) {
   const [coords, setCoords] = useState(null);
   const [geoError, setGeoError] = useState(null);
 
-  const handleGetLocation = () => {
-    if (!navigator.geolocation) {
-      setGeoError('Geolocation is not supported by your browser.');
-      setGeoState('denied');
-      return;
-    }
-
+  const handleGetLocation = async () => {
     setGeoState('loading');
     setGeoError(null);
 
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const { latitude: lat, longitude: lng } = position.coords;
+    try {
+      if (Capacitor.isNativePlatform()) {
+        const hasPermission = await Geolocation.checkPermissions();
+        if (hasPermission.location !== 'granted') {
+          const request = await Geolocation.requestPermissions();
+          if (request.location !== 'granted') {
+            throw new Error('Location permission denied natively');
+          }
+        }
+        
+        const coordinates = await Geolocation.getCurrentPosition({
+          enableHighAccuracy: true,
+          timeout: 10000,
+        });
+
+        const lat = coordinates.coords.latitude;
+        const lng = coordinates.coords.longitude;
         setCoords({ lat, lng });
         setGeoState('granted');
         setGeoError(null);
-        onLocation({ lat, lng }); // bubble up to the parent page
-      },
-      (err) => {
-        const message = GEO_ERRORS[err.code] || 'An unknown error occurred while fetching location.';
-        setGeoError(message);
-        setGeoState('denied');
-        onLocation(null); // let parent know location is unavailable
-      },
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-    );
+        onLocation({ lat, lng });
+
+      } else {
+        if (!navigator.geolocation) {
+          setGeoError('Geolocation is not supported by your browser.');
+          setGeoState('denied');
+          return;
+        }
+
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            const { latitude: lat, longitude: lng } = position.coords;
+            setCoords({ lat, lng });
+            setGeoState('granted');
+            setGeoError(null);
+            onLocation({ lat, lng });
+          },
+          (err) => {
+            const message = GEO_ERRORS[err.code] || 'An unknown error occurred while fetching location.';
+            setGeoError(message);
+            setGeoState('denied');
+            onLocation(null);
+          },
+          { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+        );
+      }
+    } catch (err) {
+      setGeoError(err.message || 'An unknown error occurred while fetching location.');
+      setGeoState('denied');
+      onLocation(null);
+    }
   };
 
   return (

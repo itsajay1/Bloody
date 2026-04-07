@@ -1,15 +1,24 @@
 import Notification from '../models/Notification.js';
+import Donor from '../models/Donor.js';
+import { successResponse } from '../utils/responseWrapper.js';
 
 // @desc    Get all unread notifications for the logged-in donor
 // @route   GET /api/notifications
 // @access  Private
 const getNotifications = async (req, res, next) => {
   try {
-    const notifications = await Notification.find({ donor: req.donor._id })
+    const donor = await Donor.findOne({ user: req.user._id });
+    
+    if (!donor) {
+      successResponse(res, 'Notifications fetched successfully', []);
+      return;
+    }
+
+    const notifications = await Notification.find({ donor: donor._id })
       .sort({ createdAt: -1 })
       .limit(20);
 
-    res.json(notifications);
+    successResponse(res, 'Notifications fetched successfully', notifications);
   } catch (error) {
     next(error);
   }
@@ -20,8 +29,15 @@ const getNotifications = async (req, res, next) => {
 // @access  Private
 const markAsRead = async (req, res, next) => {
   try {
+    const donor = await Donor.findOne({ user: req.user._id });
+    
+    if (!donor) {
+      res.status(404);
+      throw new Error('Donor profile not found');
+    }
+
     const notification = await Notification.findOneAndUpdate(
-      { _id: req.params.id, donor: req.donor._id },
+      { _id: req.params.id, donor: donor._id },
       { read: true },
       { new: true }
     );
@@ -31,7 +47,7 @@ const markAsRead = async (req, res, next) => {
       throw new Error('Notification not found');
     }
 
-    res.json(notification);
+    successResponse(res, 'Notification marked as read', notification);
   } catch (error) {
     next(error);
   }
@@ -42,11 +58,19 @@ const markAsRead = async (req, res, next) => {
 // @access  Private
 const markAllAsRead = async (req, res, next) => {
   try {
+    const donor = await Donor.findOne({ user: req.user._id });
+    
+    if (!donor) {
+      res.status(404);
+      throw new Error('Donor profile not found');
+    }
+
     await Notification.updateMany(
-      { donor: req.donor._id, read: false },
+      { donor: donor._id, read: false },
       { read: true }
     );
-    res.json({ message: 'All notifications marked as read' });
+    
+    successResponse(res, 'All notifications marked as read', null);
   } catch (error) {
     next(error);
   }

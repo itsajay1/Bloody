@@ -25,7 +25,7 @@ function DonationTimeline({ history }) {
             <div className="absolute w-10 h-10 bg-red-500/10 rounded-full animate-ping opacity-0 group-hover:opacity-100"></div>
           </div>
           
-          <div className="glass p-8 rounded-[2rem] border-white/60 shadow-premium group-hover:-translate-y-2 transition-all duration-700 hover:shadow-[0_40px_80px_-15px_rgba(220,38,38,0.1)]">
+          <div className="bg-white/75 backdrop-blur-[12px] border border-white/60 p-8 rounded-[2rem] shadow-[0_20px_40px_-15px_rgba(220,38,38,0.15)] group-hover:-translate-y-2 transition-all duration-700 hover:shadow-[0_40px_80px_-15px_rgba(220,38,38,0.1)]">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
                 <h4 className="text-2xl font-black text-gray-900 mb-1 tracking-tighter leading-none group-hover:text-red-500 transition-colors">

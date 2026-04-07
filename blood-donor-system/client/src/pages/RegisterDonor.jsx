@@ -5,6 +5,7 @@ import InputField from '../components/ui/InputField';
 import SelectField from '../components/ui/SelectField';
 import LocationPicker from '../components/ui/LocationPicker';
 import { useAuth } from '../context/AuthContext';
+import { apiRequest } from '../utils/api';
 
 function RegisterDonor() {
   const [role, setRole] = useState('donor');
@@ -97,19 +98,13 @@ function RegisterDonor() {
         location: role === 'donor' ? { lat: location.lat, lng: location.lng } : undefined,
       };
 
-      const res = await fetch('/api/users/register', {
+      const data = await apiRequest('/api/auth/register', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
 
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.message || 'Failed to register');
-      }
-
-      login(data);
+      const userData = data.data;
+      login(userData);
       setStatus({ type: 'success', message: `Successfully registered as ${role}! Redirecting...` });
       
       setTimeout(() => navigate(role === 'donor' ? '/profile' : '/'), 1500);
@@ -120,8 +115,8 @@ function RegisterDonor() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto px-6 py-24 animate-fade-in-up safe-pt">
-      <div className="glass p-10 sm:p-16 rounded-[3.5rem] shadow-premium border-white/60 relative overflow-hidden">
+    <div className="max-w-4xl mx-auto px-6 py-24 animate-fade-in-up">
+      <div className="bg-white/75 backdrop-blur-[12px] border border-white/60 p-10 sm:p-16 rounded-[3.5rem] shadow-[0_20px_40px_-15px_rgba(220,38,38,0.15)] relative overflow-hidden">
         
         {/* Soft decorative background flares */}
         <div className="absolute -top-24 -right-24 w-80 h-80 rounded-full bg-red-100/40 opacity-60 mix-blend-multiply blur-3xl z-0 pointer-events-none"></div>
@@ -218,7 +213,7 @@ function RegisterDonor() {
                   />
                 </div>
                 
-                <div className="flex items-center p-6 bg-white rounded-2xl border border-gray-100 shadow-premium cursor-pointer hover:border-red-200 transition-all group/check active:scale-[0.98]" onClick={() => setFormData(p => ({ ...p, available: !p.available }))}>
+                <div className="flex items-center p-6 bg-white rounded-2xl border border-gray-100 shadow-[0_20px_40px_-15px_rgba(220,38,38,0.15)] cursor-pointer hover:border-red-200 transition-all group/check active:scale-[0.98]" onClick={() => setFormData(p => ({ ...p, available: !p.available }))}>
                   <div className={`w-6 h-6 rounded-lg border-2 transition-all flex items-center justify-center ${formData.available ? 'bg-red-600 border-red-600' : 'bg-transparent border-gray-200 group-hover/check:border-red-400'}`}>
                     {formData.available && <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="4" d="M5 13l4 4L19 7" /></svg>}
                   </div>
@@ -235,7 +230,7 @@ function RegisterDonor() {
             <button
               type="submit"
               disabled={status?.type === 'loading' || status?.type === 'success'}
-              className="w-full h-20 group bg-gray-900 text-white font-black uppercase tracking-[0.2em] text-[10px] rounded-[2rem] hover:bg-red-600 shadow-2xl hover:shadow-red-500/40 transform transition-all duration-500 hover:-translate-y-1 mt-12 flex items-center justify-center gap-4 disabled:opacity-70 disabled:cursor-not-allowed active:scale-95"
+              className="w-full h-20 flex items-center justify-center gap-4 bg-gray-900 text-white font-black uppercase tracking-[0.2em] text-[10px] rounded-[2rem] transition-all duration-500 hover:bg-red-600 hover:shadow-[0_25px_50px_-12px_rgba(220,38,38,0.4)] hover:-translate-y-1 active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed group mt-12"
             >
               <span>{status?.type === 'loading' ? 'Intercepting Identity...' : 'Confirm Registration'}</span>
               <svg className="w-5 h-5 group-hover:translate-x-2 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>

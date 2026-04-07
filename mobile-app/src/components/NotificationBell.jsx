@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import API_BASE_URL from '../config';
 
 const POLL_INTERVAL = 15000; // 15 seconds
 
@@ -11,18 +10,9 @@ function NotificationBell() {
   const unreadCount = notifications.filter((n) => !n.read).length;
 
   const fetchNotifications = useCallback(async () => {
-    const stored = localStorage.getItem('userInfo');
-    if (!stored) return;
-    const { token } = JSON.parse(stored);
-
     try {
-      const res = await fetch(`${API_BASE_URL}/api/notifications`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setNotifications(data);
-      }
+      const data = await apiRequest('/api/notifications');
+      setNotifications(data);
     } catch {
       // Silently fail — polling should not disrupt the UI
     }
@@ -47,15 +37,8 @@ function NotificationBell() {
   }, []);
 
   const markAsRead = async (id) => {
-    const stored = localStorage.getItem('userInfo');
-    if (!stored) return;
-    const { token } = JSON.parse(stored);
-
     try {
-      await fetch(`${API_BASE_URL}/api/notifications/${id}/read`, {
-        method: 'PUT',
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await apiRequest(`/api/notifications/${id}/read`, { method: 'PUT' });
       setNotifications((prev) =>
         prev.map((n) => (n._id === id ? { ...n, read: true } : n))
       );
@@ -65,15 +48,8 @@ function NotificationBell() {
   };
 
   const markAllAsRead = async () => {
-    const stored = localStorage.getItem('userInfo');
-    if (!stored) return;
-    const { token } = JSON.parse(stored);
-
     try {
-      await fetch(`${API_BASE_URL}/api/notifications/read-all`, {
-        method: 'PUT',
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await apiRequest('/api/notifications/read-all', { method: 'PUT' });
       setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
     } catch {
       // ignore
@@ -117,7 +93,7 @@ function NotificationBell() {
 
       {/* Dropdown */}
       {open && (
-        <div className="absolute right-0 mt-3 w-80 glass rounded-[2rem] shadow-premium overflow-hidden z-50 animate-fade-in-up border-white/60">
+        <div className="absolute right-0 mt-3 w-80 bg-white/75 backdrop-blur-[12px] border border-white/60 rounded-[2rem] shadow-[0_20px_40px_-15px_rgba(220,38,38,0.15)] overflow-hidden z-50 animate-fade-in-up">
           {/* Header */}
           <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-white/40">
             <h3 className="font-black text-gray-900 text-xs uppercase tracking-widest">Notifications</h3>
@@ -155,8 +131,8 @@ function NotificationBell() {
                     <div className={`flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center mt-0.5 border transition-all ${
                       !n.read ? 'bg-white border-red-100 shadow-sm' : 'bg-gray-50 border-gray-100'
                     }`}>
-                      <svg className={`w-5 h-5 ${!n.read ? 'text-red-500 animate-pulse' : 'text-gray-300'}`} fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M12 2c-4.42 0-8 3.58-8 8 0 5.42 7.17 11.42 7.48 11.67.15.12.33.18.52.18s.37-.06.52-.18c.31-.25 7.48-6.25 7.48-11.67 0-4.42-3.58-8-8-8z" />
+                      <svg className={`w-5 h-5 ${!n.read ? 'text-red-500 animate-pulse' : 'text-gray-300'}`} fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" />
                       </svg>
                     </div>
                     <div className="flex-1 min-w-0">

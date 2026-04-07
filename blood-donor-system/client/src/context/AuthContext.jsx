@@ -8,11 +8,18 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     // Initialize user state from localStorage
-    const userInfoStr = localStorage.getItem('userInfo');
-    if (userInfoStr) {
+    const savedUser = localStorage.getItem('userInfo');
+    if (savedUser) {
       try {
-        const userInfo = JSON.parse(userInfoStr);
-        setUser(userInfo);
+        const parsedUser = JSON.parse(savedUser);
+        // Basic sanity check: token must exist (assuming it's not a dummy object)
+        if (parsedUser && parsedUser.token) {
+          setUser(parsedUser);
+          console.debug('Auth restored for:', parsedUser.email || parsedUser.name);
+        } else {
+            console.warn('Invalid user session found, clearing...');
+            localStorage.removeItem('userInfo');
+        }
       } catch (error) {
         console.error('Failed to parse userInfo:', error);
         localStorage.removeItem('userInfo');

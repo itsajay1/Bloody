@@ -5,7 +5,7 @@ import InputField from '../components/ui/InputField';
 import SelectField from '../components/ui/SelectField';
 import LocationPicker from '../components/ui/LocationPicker';
 import { useAuth } from '../context/AuthContext';
-import API_BASE_URL from '../config';
+import { apiRequest } from '../utils/api';
 
 function RegisterDonor() {
   const [role, setRole] = useState('donor');
@@ -26,7 +26,7 @@ function RegisterDonor() {
   });
   const [status, setStatus] = useState(null);
   const [errors, setErrors] = useState({});
-  const [location, setLocation] = useState(null); 
+  const [location, setLocation] = useState(null); // { lat, lng } from browser
   const navigate = useNavigate();
   const { user, login } = useAuth();
 
@@ -44,6 +44,7 @@ function RegisterDonor() {
       ...prev,
       [name]: type === 'checkbox' ? checked : value,
     }));
+    // Clear the specific error when user types again
     if (errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: null }));
     }
@@ -82,7 +83,7 @@ function RegisterDonor() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setStatus({ type: 'loading', message: 'Intercepting Identity...' });
+    setStatus({ type: 'loading', message: 'Registering donor secure profile...' });
 
     if (!validateForm()) {
       setStatus({ type: 'error', message: 'Please fix the errors in the form below.' });
@@ -90,29 +91,20 @@ function RegisterDonor() {
     }
 
     try {
-      // Fallback coordinates (Kathmandu) if location services fail in emulator
-      const finalLocation = location || { lat: 27.7172, lng: 85.3240 };
-
       const payload = {
         ...formData,
         role,
         age: role === 'donor' ? Number(formData.age) : undefined,
-        location: role === 'donor' ? { lat: finalLocation.lat, lng: finalLocation.lng } : undefined,
+        location: role === 'donor' ? { lat: location.lat, lng: location.lng } : undefined,
       };
 
-      const res = await fetch(`${API_BASE_URL}/api/users/register`, {
+      const data = await apiRequest('/api/auth/register', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
 
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.message || 'Failed to register');
-      }
-
-      login(data);
+      const userData = data.data;
+      login(userData);
       setStatus({ type: 'success', message: `Successfully registered as ${role}! Redirecting...` });
       
       setTimeout(() => navigate(role === 'donor' ? '/profile' : '/'), 1500);
@@ -123,14 +115,15 @@ function RegisterDonor() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto px-6 py-12 animate-fade-in-up">
-      <div className="glass p-10 sm:p-16 rounded-[3.5rem] shadow-premium border-white/60 relative overflow-hidden">
+    <div className="max-w-4xl mx-auto px-6 py-24 animate-fade-in-up">
+      <div className="bg-white/75 backdrop-blur-[12px] border border-white/60 p-10 sm:p-16 rounded-[3.5rem] shadow-[0_20px_40px_-15px_rgba(220,38,38,0.15)] relative overflow-hidden">
         
+        {/* Soft decorative background flares */}
         <div className="absolute -top-24 -right-24 w-80 h-80 rounded-full bg-red-100/40 opacity-60 mix-blend-multiply blur-3xl z-0 pointer-events-none"></div>
         <div className="absolute -bottom-24 -left-24 w-80 h-80 rounded-full bg-orange-100/40 opacity-60 mix-blend-multiply blur-3xl z-0 pointer-events-none"></div>
         
-        <div className="relative z-10 text-center">
-          <div className="mb-16">
+        <div className="relative z-10">
+          <div className="text-center mb-16">
             <div className="w-16 h-16 bg-red-600 text-white rounded-[1.25rem] flex items-center justify-center mb-10 shadow-2xl shadow-red-500/30 mx-auto transform hover:rotate-6 transition-transform">
               <svg className="w-9 h-9" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M12 2c-4.42 0-8 3.58-8 8 0 5.42 7.17 11.42 7.48 11.67.15.12.33.18.52.18s.37-.06.52-.18c.31-.25 7.48-6.25 7.48-11.67 0-4.42-3.58-8-8-8z" />
@@ -144,7 +137,7 @@ function RegisterDonor() {
             </p>
           </div>
 
-          {/* Role Selection Toggle */}
+          {/* Premium Role Selection Toggle */}
           <div className="relative flex p-1.5 bg-gray-100 rounded-[2rem] mb-16 max-w-xs mx-auto border border-gray-200 shadow-inner group">
             <div 
               className={`absolute top-1.5 bottom-1.5 w-[calc(50%-6px)] bg-white rounded-[1.75rem] shadow-xl transition-all duration-500 ease-out ${role === 'hospital' ? 'translate-x-[calc(100%+6px)]' : 'translate-x-0'}`}
@@ -165,7 +158,7 @@ function RegisterDonor() {
           
           <AlertMessage status={status} />
 
-          <form onSubmit={handleSubmit} className="space-y-12 text-left" noValidate>
+          <form onSubmit={handleSubmit} className="space-y-12" noValidate>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-10 font-bold">
               <InputField label="Full Name" name="name" value={formData.name} onChange={handleChange} error={errors.name} placeholder="Nexus Commander" />
               <InputField label="Email" type="email" name="email" value={formData.email} onChange={handleChange} error={errors.email} placeholder="hero@lifeline.com" />
@@ -220,12 +213,14 @@ function RegisterDonor() {
                   />
                 </div>
                 
-                <div className="flex items-center p-6 bg-white rounded-2xl border border-gray-100 shadow-premium cursor-pointer hover:border-red-200 transition-all group/check active:scale-[0.98]" onClick={() => setFormData(p => ({ ...p, available: !p.available }))}>
+                <div className="flex items-center p-6 bg-white rounded-2xl border border-gray-100 shadow-[0_20px_40px_-15px_rgba(220,38,38,0.15)] cursor-pointer hover:border-red-200 transition-all group/check active:scale-[0.98]" onClick={() => setFormData(p => ({ ...p, available: !p.available }))}>
                   <div className={`w-6 h-6 rounded-lg border-2 transition-all flex items-center justify-center ${formData.available ? 'bg-red-600 border-red-600' : 'bg-transparent border-gray-200 group-hover/check:border-red-400'}`}>
                     {formData.available && <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="4" d="M5 13l4 4L19 7" /></svg>}
                   </div>
                   <div className="ml-6">
-                    <label className="text-sm font-black text-gray-900 cursor-pointer tracking-tight">Ready for Active Duty</label>
+                    <label className="text-sm font-black text-gray-900 cursor-pointer tracking-tight">
+                      Ready for Active Duty
+                    </label>
                     <p className="text-xs text-gray-400 mt-0.5 font-medium">Allow emergency requesters to discover your profile.</p>
                   </div>
                 </div>
@@ -235,9 +230,9 @@ function RegisterDonor() {
             <button
               type="submit"
               disabled={status?.type === 'loading' || status?.type === 'success'}
-              className="w-full h-20 group bg-gray-900 text-white font-black uppercase tracking-[0.2em] text-[10px] rounded-[2rem] hover:bg-red-600 shadow-2xl hover:shadow-red-500/40 transform transition-all duration-500 hover:-translate-y-1 mt-12 flex items-center justify-center gap-4 disabled:opacity-70 disabled:cursor-not-allowed active:scale-95"
+              className="w-full h-20 flex items-center justify-center gap-4 bg-gray-900 text-white font-black uppercase tracking-[0.2em] text-[10px] rounded-[2rem] transition-all duration-500 hover:bg-red-600 hover:shadow-[0_25px_50px_-12px_rgba(220,38,38,0.4)] hover:-translate-y-1 active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed group mt-12"
             >
-              <span>{status?.type === 'loading' ? 'Encrypting Identity...' : 'Initialize Registry'}</span>
+              <span>{status?.type === 'loading' ? 'Intercepting Identity...' : 'Confirm Registration'}</span>
               <svg className="w-5 h-5 group-hover:translate-x-2 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
             </button>
           </form>

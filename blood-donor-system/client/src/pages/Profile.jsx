@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import DonationTimeline from '../components/DonationTimeline';
 import { useAuth } from '../context/AuthContext';
+import { apiRequest } from '../utils/api';
 
 function Profile() {
   const [profile, setProfile] = useState(null);
@@ -18,30 +19,25 @@ function Profile() {
         return;
       }
       
-      if (user.role !== 'donor') {
-        navigate('/'); 
+      if (user.role === 'hospital') {
+        setProfile({
+            name: user.name,
+            email: user.email,
+            role: user.role,
+        });
+        setStatus(null);
         return;
       }
 
       try {
-        const res = await fetch('/api/donor/profile', {
-          headers: {
-            Authorization: `Bearer ${user.token}`
-          }
-        });
-
-        if (!res.ok) {
-          if (res.status === 401) {
-             logout();
-             return;
-          }
-          throw new Error('Failed to fetch profile');
-        }
-
-        const data = await res.json();
-        setProfile(data);
+        const data = await apiRequest('/api/donor/profile');
+        setProfile(data.data);
         setStatus(null);
       } catch (error) {
+        if (error.message.includes('401') || error.message.includes('Unauthorized')) {
+           logout();
+           return;
+        }
         console.error(error);
         setStatus({ type: 'error', message: 'Communications Link Failure' });
       }
@@ -57,18 +53,11 @@ function Profile() {
     const { token } = user || {};
 
     try {
-      const res = await fetch('/api/donor/donate', {
+      const data = await apiRequest('/api/donor/donate', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
-        },
         body: JSON.stringify({ hospital })
       });
 
-      if (!res.ok) throw new Error('Failed to log donation');
-
-      const data = await res.json();
       setProfile(data.donor); // Server returns updated donor
       setLogStatus({ type: 'success', message: 'Donation securely logged!' });
       setHospital('');
@@ -83,20 +72,13 @@ function Profile() {
     const { token } = user || {};
 
     try {
-      const res = await fetch('/api/donor/availability', {
+      const data = await apiRequest('/api/donor/availability', {
         method: 'PUT',
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
       });
 
-      if (!res.ok) throw new Error('Failed to update availability');
-
-      const data = await res.json();
       setProfile(prev => ({ ...prev, available: data.available }));
     } catch (error) {
       console.error(error);
-      // Optional: show error message to user
     }
   };
 
@@ -124,12 +106,45 @@ function Profile() {
     )
   }
 
+  if (profile?.role === 'hospital') {
+      return (
+        <div className="max-w-6xl mx-auto py-24 px-6 lg:px-8 animate-fade-in-up">
+            <div className="bg-white/75 backdrop-blur-[12px] border border-white/60 rounded-[3rem] shadow-[0_20px_40px_-15px_rgba(220,38,38,0.15)] p-10 relative overflow-hidden group">
+                <div className="absolute -top-20 -right-20 w-48 h-48 bg-red-100/40 rounded-full blur-3xl z-0 pointer-events-none"></div>
+                <div className="relative z-10 text-center">
+                    <div className="w-28 h-28 rounded-[2.5rem] bg-gradient-to-br from-gray-800 to-gray-900 shadow-2xl mx-auto flex items-center justify-center mb-6">
+                        <svg className="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+                    </div>
+                    <h2 className="text-4xl font-black text-gray-900 tracking-tighter mb-2">{profile.name}</h2>
+                    <p className="text-gray-500 font-medium mb-8">Hospital Administrator Interface</p>
+                    
+                    <div className="max-w-md mx-auto space-y-6 bg-white/40 p-8 rounded-[2rem] border border-white/60 shadow-inner">
+                        <div className="flex items-center text-left group/item">
+                            <div className="w-12 h-12 rounded-2xl bg-white shadow-[0_20px_40px_-15px_rgba(220,38,38,0.15)] flex items-center justify-center mr-5 text-gray-400 group-hover/item:text-red-500 transition-colors">
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                            </div>
+                            <div className="min-w-0">
+                                <label className="text-[9px] font-black text-gray-400 uppercase tracking-[0.2em] block mb-0.5">Admin Email</label>
+                                <p className="font-bold text-gray-900 tracking-tight">{profile.email}</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button onClick={() => navigate('/request')} className="mt-12 px-8 py-4 bg-red-600 text-white font-black rounded-2xl uppercase tracking-widest text-[10px] hover:bg-red-500 transition-all shadow-xl shadow-red-500/30">
+                        Trigger Emergency Broadcast
+                    </button>
+                </div>
+            </div>
+        </div>
+      );
+  }
+
   return (
-    <div className="max-w-6xl mx-auto py-24 px-6 lg:px-8 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 animate-fade-in-up safe-pt">
+    <div className="max-w-6xl mx-auto py-24 px-6 lg:px-8 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 animate-fade-in-up">
       
       {/* Profile Sidebar */}
       <div className="lg:col-span-4 h-fit lg:sticky lg:top-32">
-        <div className="glass rounded-[3rem] shadow-premium border-white/60 p-10 relative overflow-hidden group">
+        <div className="bg-white/75 backdrop-blur-[12px] border border-white/60 rounded-[3rem] shadow-[0_20px_40px_-15px_rgba(220,38,38,0.15)] p-10 relative overflow-hidden group">
           <div className="absolute -top-20 -right-20 w-48 h-48 bg-red-100/40 rounded-full blur-3xl z-0 pointer-events-none"></div>
           
           <div className="relative z-10">
@@ -138,7 +153,7 @@ function Profile() {
                 <svg className="w-16 h-16 text-white/20 absolute -bottom-2 -right-2 transition-transform group-hover/icon:scale-125" viewBox="0 0 24 24" fill="currentColor">
                   <path d="M12 2c-4.42 0-8 3.58-8 8 0 5.42 7.17 11.42 7.48 11.67.15.12.33.18.52.18s.37-.06.52-.18c.31-.25 7.48-6.25 7.48-11.67 0-4.42-3.58-8-8-8z" />
                 </svg>
-                <span className="text-4xl font-black text-white tracking-tighter relative z-10">{profile.bloodGroup}</span>
+                <span className="text-4xl font-black text-white tracking-tighter relative z-10">{profile?.bloodGroup || '?'}</span>
               </div>
               <h2 className="text-3xl font-black text-gray-900 tracking-tighter mb-2">{profile.name}</h2>
               <div className="flex flex-col items-center gap-4">
@@ -156,7 +171,7 @@ function Profile() {
             
             <div className="space-y-6 bg-white/40 p-8 rounded-[2rem] border border-white/60 shadow-inner">
               <div className="flex items-center group/item">
-                <div className="w-12 h-12 rounded-2xl bg-white shadow-premium flex items-center justify-center mr-5 text-gray-400 group-hover/item:text-red-500 transition-colors">
+                <div className="w-12 h-12 rounded-2xl bg-white shadow-[0_20px_40px_-15px_rgba(220,38,38,0.15)] flex items-center justify-center mr-5 text-gray-400 group-hover/item:text-red-500 transition-colors">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
                 </div>
                 <div className="min-w-0">
@@ -165,7 +180,7 @@ function Profile() {
                 </div>
               </div>
               <div className="flex items-center group/item">
-                <div className="w-12 h-12 rounded-2xl bg-white shadow-premium flex items-center justify-center mr-5 text-gray-400 group-hover/item:text-red-500 transition-colors">
+                <div className="w-12 h-12 rounded-2xl bg-white shadow-[0_20px_40px_-15px_rgba(220,38,38,0.15)] flex items-center justify-center mr-5 text-gray-400 group-hover/item:text-red-500 transition-colors">
                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path></svg>
                 </div>
                 <div>
@@ -174,7 +189,7 @@ function Profile() {
                 </div>
               </div>
               <div className="flex items-center group/item">
-                <div className="w-12 h-12 rounded-2xl bg-white shadow-premium flex items-center justify-center mr-5 text-gray-400 group-hover/item:text-red-500 transition-colors">
+                <div className="w-12 h-12 rounded-2xl bg-white shadow-[0_20px_40px_-15px_rgba(220,38,38,0.15)] flex items-center justify-center mr-5 text-gray-400 group-hover/item:text-red-500 transition-colors">
                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
                 </div>
                 <div>
@@ -227,7 +242,7 @@ function Profile() {
                 <button
                   type="submit"
                   disabled={logStatus?.type === 'loading'}
-                  className="w-full h-16 bg-red-600 hover:bg-red-500 text-white font-black uppercase tracking-[0.2em] text-[11px] rounded-[1.25rem] shadow-2xl shadow-red-500/20 hover:shadow-red-500/40 transform transition-all duration-500 hover:-translate-y-1 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed group flex justify-center items-center gap-3"
+                  className="flex items-center justify-center gap-3 w-full h-16 bg-red-600 text-white font-black uppercase tracking-[0.2em] text-[11px] rounded-[1.25rem] shadow-[0_25px_50px_-12px_rgba(220,38,38,0.2)] transition-all duration-500 hover:bg-red-500 hover:shadow-[0_25px_50px_-12px_rgba(220,38,38,0.4)] hover:-translate-y-1 active:scale-95 disabled:opacity-50 group"
                 >
                   <svg className={`w-5 h-5 ${logStatus?.type === 'loading' ? 'animate-spin' : 'group-hover:rotate-12 transition-transform'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M12 4v16m8-8H4"></path></svg>
                   <span>{logStatus?.type === 'loading' ? 'Recording...' : 'Finalize Log'}</span>
@@ -238,7 +253,7 @@ function Profile() {
         </div>
 
         {/* Beautiful Timeline */}
-        <div className="glass p-12 rounded-[3.5rem] shadow-premium border-white/60">
+        <div className="bg-white/75 backdrop-blur-[12px] border border-white/60 p-12 rounded-[3.5rem] shadow-[0_20px_40px_-15px_rgba(220,38,38,0.15)]">
           <div className="flex items-center justify-between mb-12 px-2">
             <div>
               <h3 className="text-3xl font-black text-gray-900 tracking-tighter leading-none mb-2">Contribution Stream</h3>

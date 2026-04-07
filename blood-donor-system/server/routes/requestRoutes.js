@@ -1,9 +1,13 @@
 import express from 'express';
 const router = express.Router();
-import { getRequests, createRequest } from '../controllers/requestController.js';
+import { getRequests, createRequest, getRequestById } from '../controllers/requestController.js';
+import { protect, authorize } from '../middleware/authMiddleware.js';
 
 router.route('/')
   .get(getRequests)
-  .post(createRequest);
+  .post(protect, authorize('hospital'), createRequest);
+
+router.route('/:id')
+  .get(getRequestById);
 
 export default router;
