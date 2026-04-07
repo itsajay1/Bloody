@@ -33,21 +33,24 @@ app.use(cors({
 app.use(express.json());
 
 // API Routes
-app.use('/api/users', userRoutes);
+app.use('/api/auth', userRoutes);
 app.use('/api/donor', donorRoutes);
 app.use('/api/request', requestRoutes);
 app.use('/api/notifications', notificationRoutes);
 
 app.get('/api/test', (req, res) => {
-  res.json({ message: 'API working' });
+  res.json({ success: true, message: 'API working', data: null });
 });
 
 app.get('/api/health', (req, res) => {
   res.json({ 
-    status: 'healthy', 
-    timestamp: new Date(),
-    ip: req.ip,
-    headers: req.headers
+    success: true,
+    message: 'Server is healthy',
+    data: {
+      status: 'healthy', 
+      timestamp: new Date(),
+      ip: req.ip
+    }
   });
 });
 

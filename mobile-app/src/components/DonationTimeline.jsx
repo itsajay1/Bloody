@@ -19,17 +19,13 @@ function DonationTimeline({ history }) {
     <div className="relative border-l-4 border-gray-100 ml-6 space-y-12 py-8">
       {history.slice().reverse().map((record, index) => (
         <div key={record._id || index} className="relative pl-12 group">
-          {/* Multi-layered Animated Droplet */}
-          <div className="absolute -left-[16px] top-2 flex items-center justify-center z-10 transition-transform duration-500 group-hover:scale-125 group-hover:rotate-12">
-            <div className="w-8 h-8 rounded-xl bg-white shadow-premium flex items-center justify-center border border-red-100 group-hover:bg-red-600 group-hover:border-red-600 transition-colors">
-              <svg className="w-5 h-5 text-red-600 group-hover:text-white transition-colors" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12 2c-4.42 0-8 3.58-8 8 0 5.42 7.17 11.42 7.48 11.67.15.12.33.18.52.18s.37-.06.52-.18c.31-.25 7.48-6.25 7.48-11.67 0-4.42-3.58-8-8-8z" />
-              </svg>
-            </div>
-            <div className="absolute w-12 h-12 bg-red-500/10 rounded-full animate-ping opacity-0 group-hover:opacity-100"></div>
+          {/* Multi-layered Animated Dot */}
+          <div className="absolute -left-[14px] top-2 flex items-center justify-center">
+            <div className="w-6 h-6 rounded-full bg-white shadow-premium border-4 border-red-500 z-10 transition-transform duration-500 group-hover:scale-125 group-hover:rotate-12 group-hover:bg-red-500 group-hover:border-white"></div>
+            <div className="absolute w-10 h-10 bg-red-500/10 rounded-full animate-ping opacity-0 group-hover:opacity-100"></div>
           </div>
           
-          <div className="glass p-8 rounded-[2rem] border-white/60 shadow-premium group-hover:-translate-y-2 transition-all duration-700 hover:shadow-[0_40px_80px_-15px_rgba(220,38,38,0.1)]">
+          <div className="bg-white/75 backdrop-blur-[12px] border border-white/60 p-8 rounded-[2rem] shadow-[0_20px_40px_-15px_rgba(220,38,38,0.15)] group-hover:-translate-y-2 transition-all duration-700 hover:shadow-[0_40px_80px_-15px_rgba(220,38,38,0.1)]">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
                 <h4 className="text-2xl font-black text-gray-900 mb-1 tracking-tighter leading-none group-hover:text-red-500 transition-colors">
@@ -43,8 +39,7 @@ function DonationTimeline({ history }) {
               </div>
               <div className="text-right">
                 <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-1">Contribution Date</p>
-                <p className="text-sm font-bold text-gray-800 tracking-tight flex items-center justify-end gap-1.5">
-                  <svg className="w-3 h-3 text-red-400" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2c-4.42 0-8 3.58-8 8 0 5.42 7.17 11.42 7.48 11.67.15.12.33.18.52.18s.37-.06.52-.18c.31-.25 7.48-6.25 7.48-11.67 0-4.42-3.58-8-8-8z" /></svg>
+                <p className="text-sm font-bold text-gray-800 tracking-tight">
                   {new Date(record.date).toLocaleDateString(undefined, { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })}
                 </p>
               </div>

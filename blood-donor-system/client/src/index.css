@@ -1,5 +1,11 @@
 @import "tailwindcss";
 
+/* ===================================================================
+   LIFELINE CONNECT — Unified Design System
+   Shared across Web (client) and Mobile (mobile-app)
+   =================================================================== */
+
+/* ----- Design Tokens ----- */
 @theme {
   --color-primary-50: oklch(0.95 0.05 15);
   --color-primary-600: oklch(0.6 0.15 25);
@@ -31,14 +37,16 @@ body {
   min-height: 100vh;
 }
 
+/* ----- Utility Layer ----- */
 @layer utilities {
+
+  /* Glass Morphism */
   .glass {
     background: var(--glass);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     border: 1px solid var(--glass-border);
   }
-
   .glass-dark {
     background: rgba(15, 15, 20, 0.8);
     backdrop-filter: blur(16px);
@@ -46,6 +54,7 @@ body {
     border: 1px solid rgba(255, 255, 255, 0.1);
   }
 
+  /* Gradient Text */
   .text-gradient {
     background: linear-gradient(135deg, var(--primary) 0%, var(--primary-deep) 100%);
     -webkit-background-clip: text;
@@ -53,40 +62,40 @@ body {
     -webkit-text-fill-color: transparent;
   }
 
+  /* Premium Shadow */
   .shadow-premium {
     box-shadow: 0 20px 40px -15px rgba(220, 38, 38, 0.15);
   }
 
+  /* Animations */
   .animate-float {
     animation: float 6s ease-in-out infinite;
   }
-
   @keyframes float {
     0%, 100% { transform: translateY(0); }
     50% { transform: translateY(-10px); }
   }
-
   .animate-fade-in-up {
     animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   }
-
   @keyframes fadeInUp {
-    from {
-      opacity: 0;
-      transform: translateY(20px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
   }
 
-  /* Sidebar Drawer Animation - Platform Specific */
+  /* Sidebar Drawer Animation */
   .sidebar-enter { transform: translateX(-100%); }
   .sidebar-enter-active { transform: translateX(0); transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
   .sidebar-exit { transform: translateX(0); }
   .sidebar-exit-active { transform: translateX(-100%); transition: transform 0.4s cubic-bezier(0.7, 0, 0.84, 0); }
 
+  /* Safe Area */
   .safe-pt { padding-top: var(--safe-top); }
   .safe-pb { padding-bottom: var(--safe-bottom); }
 }
+
+
+/* ==========================================================================
+   End of Global Styles
+   ========================================================================== */
+

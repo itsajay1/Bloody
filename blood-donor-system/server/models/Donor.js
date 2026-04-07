@@ -49,6 +49,10 @@ const donorSchema = new mongoose.Schema({
   available: {
     type: Boolean,
     default: true,
+  },
+  fcmTokens: {
+    type: [String],
+    default: []
   }
 }, { timestamps: true });
 
