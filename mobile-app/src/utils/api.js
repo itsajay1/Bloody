@@ -25,16 +25,26 @@ export const apiRequest = async (endpoint, options = {}) => {
 
   try {
     const response = await fetch(url, config);
-    const data = await response.json();
+    
+    // Check if response is empty (e.g., 204 No Content)
+    const text = await response.text();
+    const data = text ? JSON.parse(text) : {};
 
     if (!response.ok) {
-      throw new Error(data.message || 'API request failed');
+      throw new Error(data.message || `Error ${response.status}: ${response.statusText}`);
     }
 
     return data;
   } catch (error) {
+    let friendlyMessage = error.message;
+
+    // Handle Network Errors (TypeError: Failed to fetch)
+    if (error instanceof TypeError && error.message.includes('fetch')) {
+      friendlyMessage = 'Server Unreachable (Mobile Bridge). Please check your internet connection or ADB bridge.';
+    }
+
     console.error(`API Error [${endpoint}]:`, error);
-    throw error;
+    throw new Error(friendlyMessage);
   }
 };
 

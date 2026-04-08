@@ -1,20 +1,47 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import RequestForm from '../components/RequestForm';
 import DonorCard from '../components/DonorCard';
 import AlertMessage from '../components/ui/AlertMessage';
 import MapDisplay from '../components/ui/MapDisplay';
 import { useAuth } from '../context/AuthContext';
+import { useSocket } from '../context/SocketContext';
 import { apiRequest } from '../utils/api';
+import toast from 'react-hot-toast';
 
 function RequestBlood() {
   const [donors, setDonors] = useState([]);
-  const [status, setStatus] = useState(null);
   const [lastLocation, setLastLocation] = useState(null); // Keep for map display
+  const socket = useSocket();
+
+  // Socket listener for real-time donor updates
+  useEffect(() => {
+    if (socket && donors.length > 0) {
+      const handleDonorUpdate = (update) => {
+        const { donorId, status: updateType, available, donor: updatedDonor } = update;
+        
+        setDonors((prevDonors) => {
+          if (updateType === 'availability_toggle') {
+            // Remove if now unavailable, otherwise keep (or re-fetch if we want to be thorough)
+            return available 
+              ? prevDonors 
+              : prevDonors.filter(d => d._id !== donorId);
+          }
+          if (updateType === 'updated' && updatedDonor) {
+            return prevDonors.map(d => d._id === donorId ? { ...d, ...updatedDonor } : d);
+          }
+          return prevDonors;
+        });
+      };
+
+      socket.on('donor_status_updated', handleDonorUpdate);
+      return () => socket.off('donor_status_updated', handleDonorUpdate);
+    }
+  }, [socket, donors]);
 
   const handleRequestSearch = async ({ bloodGroup, location }) => {
-    setStatus({ type: 'loading', message: 'Searching for matching donors...' });
     setDonors([]);
     setLastLocation(location);
+    const loadingToast = toast.loading('Searching for matching heroes...');
 
     try {
       const data = await apiRequest('/api/request', {
@@ -25,17 +52,17 @@ function RequestBlood() {
         }),
       });
 
-      const matched = data.matchingDonors || [];
+      const matched = data?.data?.matchingDonors || [];
       setDonors(matched);
       
       if (matched.length === 0) {
-        setStatus({ type: 'error', message: `No available donors found for ${bloodGroup}. Request logged.` });
+        toast.error(`No available heroes found for ${bloodGroup}. Request logged.`, { id: loadingToast });
       } else {
-        setStatus({ type: 'success', message: `Found ${matched.length} matching donor(s)!` });
+        toast.success(`Found ${matched.length} matching donor(s)!`, { id: loadingToast });
       }
     } catch (error) {
       console.error(error);
-      setStatus({ type: 'error', message: error.message });
+      toast.error(error.message, { id: loadingToast });
     }
   };
 
@@ -46,12 +73,10 @@ function RequestBlood() {
         
         <div className="relative z-10">
           <div className="text-center mb-10">
-            <div className="w-16 h-16 bg-red-600 text-white rounded-[1.25rem] flex items-center justify-center mb-10 shadow-2xl shadow-red-500/30 mx-auto transform hover:rotate-6 transition-transform">
-              <svg className="w-9 h-9" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12 2c-4.42 0-8 3.58-8 8 0 5.42 7.17 11.42 7.48 11.67.15.12.33.18.52.18s.37-.06.52-.18c.31-.25 7.48-6.25 7.48-11.67 0-4.42-3.58-8-8-8z" />
-              </svg>
+            <div className="w-16 h-16 flex items-center justify-center mb-10 mx-auto transform hover:rotate-6 transition-transform">
+              <img src="/logo.png" alt="Lifeline Connect" className="w-full h-full object-contain" />
             </div>
-            <h2 className="text-4xl sm:text-7xl font-black text-gray-900 mb-4 tracking-tighter leading-none">
+            <h2 className="text-4xl sm:text-7xl font-black text-gray-900 mb-4 tracking-tighter leading-none" style={{ fontFamily: 'var(--font-heading)' }}>
               Emergency <br/><span className="bg-gradient-to-br from-red-500 to-red-700 bg-clip-text text-transparent">Broadcast</span>
             </h2>
             <p className="text-gray-500 font-medium text-lg leading-relaxed max-w-lg mx-auto">
@@ -59,9 +84,7 @@ function RequestBlood() {
             </p>
           </div>
           
-          <AlertMessage status={status} />
-
-          <RequestForm onSubmit={handleRequestSearch} isLoading={status?.type === 'loading'} />
+          <RequestForm onSubmit={handleRequestSearch} />
         </div>
       </div>
 
@@ -69,7 +92,7 @@ function RequestBlood() {
         <div className="animate-fade-in-up mt-12 grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-start">
           
           <div className="h-[500px] sticky top-32 bg-white/75 backdrop-blur-[12px] border border-white/60 rounded-[2.5rem] shadow-[0_20px_40px_-15px_rgba(220,38,38,0.15)] p-2 overflow-hidden">
-             <MapDisplay centerLocation={location} donors={donors} />
+             <MapDisplay centerLocation={lastLocation} donors={donors} />
           </div>
 
           <div>

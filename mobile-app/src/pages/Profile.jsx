@@ -9,6 +9,7 @@ function Profile() {
   const [status, setStatus] = useState({ type: 'loading', message: 'Loading profile...' });
   const [hospital, setHospital] = useState('');
   const [logStatus, setLogStatus] = useState(null);
+  const [toggleStatus, setToggleStatus] = useState(null);
   const navigate = useNavigate();
   const { user, logout } = useAuth();
 
@@ -69,16 +70,18 @@ function Profile() {
   };
 
   const handleToggleAvailability = async () => {
-    const { token } = user || {};
-
+    setToggleStatus({ type: 'loading' });
     try {
       const data = await apiRequest('/api/donor/availability', {
         method: 'PUT',
       });
 
       setProfile(prev => ({ ...prev, available: data.available }));
+      setToggleStatus(null);
     } catch (error) {
       console.error(error);
+      setToggleStatus({ type: 'error', message: error.message });
+      setTimeout(() => setToggleStatus(null), 3000);
     }
   };
 
@@ -106,16 +109,29 @@ function Profile() {
     )
   }
 
+  const isEligible = () => {
+    if (!profile?.lastDonationDate) return true;
+    const ninetyDays = 90 * 24 * 60 * 60 * 1000;
+    return (Date.now() - new Date(profile.lastDonationDate).getTime()) > ninetyDays;
+  };
+
+  const getDaysRemaining = () => {
+    if (!profile?.lastDonationDate) return 0;
+    const ninetyDays = 90 * 24 * 60 * 60 * 1000;
+    const remaining = ninetyDays - (Date.now() - new Date(profile.lastDonationDate).getTime());
+    return Math.ceil(remaining / (1000 * 60 * 60 * 24));
+  };
+
   if (profile?.role === 'hospital') {
       return (
         <div className="max-w-6xl mx-auto py-24 px-6 lg:px-8 animate-fade-in-up">
             <div className="bg-white/75 backdrop-blur-[12px] border border-white/60 rounded-[3rem] shadow-[0_20px_40px_-15px_rgba(220,38,38,0.15)] p-10 relative overflow-hidden group">
                 <div className="absolute -top-20 -right-20 w-48 h-48 bg-red-100/40 rounded-full blur-3xl z-0 pointer-events-none"></div>
                 <div className="relative z-10 text-center">
-                    <div className="w-28 h-28 rounded-[2.5rem] bg-gradient-to-br from-gray-800 to-gray-900 shadow-2xl mx-auto flex items-center justify-center mb-6">
-                        <svg className="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+                    <div className="w-28 h-28 flex items-center justify-center mb-6 mx-auto transition-transform hover:scale-110">
+                        <img src="/logo.png" alt="Logo" className="w-full h-full object-contain" />
                     </div>
-                    <h2 className="text-4xl font-black text-gray-900 tracking-tighter mb-2">{profile.name}</h2>
+                    <h2 className="text-4xl font-black text-gray-900 tracking-tighter mb-2" style={{ fontFamily: 'var(--font-heading)' }}>{profile.name}</h2>
                     <p className="text-gray-500 font-medium mb-8">Hospital Administrator Interface</p>
                     
                     <div className="max-w-md mx-auto space-y-6 bg-white/40 p-8 rounded-[2rem] border border-white/60 shadow-inner">
@@ -155,18 +171,39 @@ function Profile() {
                 </svg>
                 <span className="text-4xl font-black text-white tracking-tighter relative z-10">{profile?.bloodGroup || '?'}</span>
               </div>
-              <h2 className="text-3xl font-black text-gray-900 tracking-tighter mb-2">{profile.name}</h2>
+              <h2 className="text-3xl font-black text-gray-900 tracking-tighter mb-2">{profile?.name || 'Identity Found'}</h2>
               <div className="flex flex-col items-center gap-4">
-                <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-500 ${profile.available ? 'bg-green-50 text-green-600 border border-green-100' : 'bg-gray-100 text-gray-400 border border-gray-200'}`}>
-                  {profile.available ? 'Active Duty' : 'Standby'}
+                <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-500 
+                  ${!isEligible() 
+                    ? 'bg-red-50 text-red-500 border border-red-100' 
+                    : profile.available 
+                      ? 'bg-green-50 text-green-600 border border-green-100' 
+                      : 'bg-gray-100 text-gray-400 border border-gray-200'}`}>
+                  {!isEligible() ? 'Recovering' : profile.available ? 'Active Duty' : 'Standby'}
                 </span>
+                {!isEligible() && (
+                  <div className="mt-2 text-center">
+                    <p className="text-[9px] font-black text-red-500 uppercase tracking-widest mb-1">Cooldown Active</p>
+                    <div className="w-32 h-1.5 bg-gray-100 rounded-full overflow-hidden border border-gray-200/50">
+                      <div 
+                        className="h-full bg-red-500 transition-all duration-1000" 
+                        style={{ width: `${Math.max(5, 100 - (getDaysRemaining() / 90 * 100))}%` }}
+                      ></div>
+                    </div>
+                    <p className="text-[8px] font-bold text-gray-400 mt-1">{getDaysRemaining()} cycles until re-activation</p>
+                  </div>
+                )}
                 <button 
                   onClick={handleToggleAvailability}
-                  className={`relative inline-flex h-8 w-14 items-center rounded-full transition-all duration-500 focus:outline-none ring-offset-4 focus:ring-4 focus:ring-red-500/20 ${profile.available ? 'bg-red-600 shadow-lg shadow-red-500/40' : 'bg-gray-200'}`}
+                  disabled={toggleStatus?.type === 'loading' || !isEligible()}
+                  className={`relative inline-flex h-8 w-14 items-center rounded-full transition-all duration-500 focus:outline-none ring-offset-4 focus:ring-4 focus:ring-red-500/20 ${profile.available ? 'bg-red-600 shadow-lg shadow-red-500/40' : 'bg-gray-200'} ${toggleStatus?.type === 'loading' || !isEligible() ? 'opacity-50 cursor-not-allowed' : ''}`}
                 >
-                  <span className={`${profile.available ? 'translate-x-7' : 'translate-x-1'} inline-block h-6 w-6 transform rounded-full bg-white shadow-md transition-transform duration-500 ease-out`} />
+                  <span className={`${profile.available ? 'translate-x-7' : 'translate-x-1'} inline-block h-6 w-6 transform rounded-full bg-white shadow-md transition-transform duration-500 ease-out flex items-center justify-center`}>
+                    {toggleStatus?.type === 'loading' && <div className="w-3 h-3 border-2 border-red-600 border-t-transparent rounded-full animate-spin"></div>}
+                  </span>
                 </button>
               </div>
+              {toggleStatus?.type === 'error' && <p className="text-[9px] font-bold text-red-500 mt-2">{toggleStatus.message}</p>}
             </div>
             
             <div className="space-y-6 bg-white/40 p-8 rounded-[2rem] border border-white/60 shadow-inner">
@@ -176,7 +213,7 @@ function Profile() {
                 </div>
                 <div className="min-w-0">
                   <label className="text-[9px] font-black text-gray-400 uppercase tracking-[0.2em] block mb-0.5">Frequency</label>
-                  <p className="font-bold text-gray-900 truncate tracking-tight">{profile.email}</p>
+                  <p className="font-bold text-gray-900 truncate tracking-tight">{profile?.email}</p>
                 </div>
               </div>
               <div className="flex items-center group/item">
@@ -185,7 +222,7 @@ function Profile() {
                 </div>
                 <div>
                   <label className="text-[9px] font-black text-gray-400 uppercase tracking-[0.2em] block mb-0.5">Secure Line</label>
-                  <p className="font-bold text-gray-900 tracking-tight">{profile.phone}</p>
+                  <p className="font-bold text-gray-900 tracking-tight">{profile?.phone}</p>
                 </div>
               </div>
               <div className="flex items-center group/item">
@@ -194,7 +231,7 @@ function Profile() {
                 </div>
                 <div>
                   <label className="text-[9px] font-black text-gray-400 uppercase tracking-[0.2em] block mb-0.5">Registry Bio</label>
-                  <p className="font-bold text-gray-900 tracking-tight">{profile.age} Cycles Old</p>
+                  <p className="font-bold text-gray-900 tracking-tight">{profile?.age} Cycles Old</p>
                 </div>
               </div>
             </div>
@@ -233,19 +270,23 @@ function Profile() {
                   <input
                     type="text"
                     required
-                    placeholder="Nexus Clinic South..."
+                    disabled={!isEligible()}
+                    placeholder={isEligible() ? "Nexus Clinic South..." : "Cooldown in progress..."}
                     value={hospital}
                     onChange={(e) => setHospital(e.target.value)}
-                    className="w-full md:w-72 h-16 px-6 rounded-[1.25rem] bg-white/5 border border-white/10 text-white placeholder-gray-600 focus:bg-white/10 focus:ring-4 focus:ring-red-500/20 focus:border-red-500 transition-all font-bold tracking-tight"
+                    className="w-full md:w-72 h-16 px-6 rounded-[1.25rem] bg-white/5 border border-white/10 text-white placeholder-gray-600 focus:bg-white/10 focus:ring-4 focus:ring-red-500/20 focus:border-red-500 transition-all font-bold tracking-tight disabled:opacity-50"
                   />
                 </div>
                 <button
                   type="submit"
-                  disabled={logStatus?.type === 'loading'}
-                  className="flex items-center justify-center gap-3 w-full h-16 bg-red-600 text-white font-black uppercase tracking-[0.2em] text-[11px] rounded-[1.25rem] shadow-[0_25px_50px_-12px_rgba(220,38,38,0.2)] transition-all duration-500 hover:bg-red-500 hover:shadow-[0_25px_50px_-12px_rgba(220,38,38,0.4)] hover:-translate-y-1 active:scale-95 disabled:opacity-50 group"
+                  disabled={logStatus?.type === 'loading' || !isEligible()}
+                  className="flex items-center justify-center gap-3 w-full h-16 bg-red-600 text-white font-black uppercase tracking-[0.2em] text-[11px] rounded-[1.25rem] shadow-[0_25px_50px_-12px_rgba(220,38,38,0.2)] transition-all duration-500 hover:bg-red-500 hover:shadow-[0_25px_50px_-12px_rgba(220,38,38,0.4)] hover:-translate-y-1 active:scale-95 disabled:opacity-50 group overflow-hidden relative font-heading"
                 >
-                  <svg className={`w-5 h-5 ${logStatus?.type === 'loading' ? 'animate-spin' : 'group-hover:rotate-12 transition-transform'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M12 4v16m8-8H4"></path></svg>
-                  <span>{logStatus?.type === 'loading' ? 'Recording...' : 'Finalize Log'}</span>
+                  <div className={`absolute inset-0 bg-white/10 transition-transform duration-500 ${logStatus?.type === 'loading' ? 'translate-x-0' : '-translate-x-full'}`}></div>
+                  <svg className={`w-5 h-5 relative z-10 ${logStatus?.type === 'loading' ? 'animate-spin' : 'group-hover:rotate-12 transition-transform'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M12 4v16m8-8H4"></path></svg>
+                  <span className="relative z-10">
+                    {logStatus?.type === 'loading' ? 'Recording...' : !isEligible() ? `${getDaysRemaining()}d Wait` : 'Finalize Log'}
+                  </span>
                 </button>
               </form>
             </div>
@@ -264,7 +305,7 @@ function Profile() {
             </div>
           </div>
           
-          <DonationTimeline history={profile.donationHistory} />
+          <DonationTimeline history={profile?.donationHistory || []} />
         </div>
       </div>
     </div>

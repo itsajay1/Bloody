@@ -15,10 +15,8 @@ function Header() {
     navigate('/login');
   };
 
-  const BloodDropIcon = ({ className }) => (
-    <svg className={className} viewBox="0 0 24 24" fill="currentColor">
-      <path d="M12 2c-4.42 0-8 3.58-8 8 0 5.42 7.17 11.42 7.48 11.67.15.12.33.18.52.18s.37-.06.52-.18c.31-.25 7.48-6.25 7.48-11.67 0-4.42-3.58-8-8-8z" />
-    </svg>
+  const Logo = ({ className }) => (
+    <img src="/logo.png" alt="Lifeline Connect Logo" className={className} />
   );
 
   const renderNavLink = (path, text, mobile = false) => {
@@ -43,10 +41,10 @@ function Header() {
       <header className="fixed top-0 left-0 right-0 z-50 px-4 pt-4 md:pt-6 transition-all duration-300 pointer-events-none">
         <div className="mx-auto max-w-7xl bg-white/70 backdrop-blur-2xl rounded-3xl shadow-[0_20px_40px_-15px_rgba(220,38,38,0.15)] border border-white/60 flex justify-between items-center h-16 md:h-20 px-6 md:px-10 pointer-events-auto">
           <div className="flex items-center gap-3 cursor-pointer group" onClick={() => navigate('/')}>
-            <div className="w-10 h-10 md:w-11 md:h-11 bg-gradient-to-br from-red-500 to-red-600 rounded-2xl flex items-center justify-center shadow-lg shadow-red-500/20 transform transition-all group-hover:scale-105 group-hover:rotate-3">
-              <BloodDropIcon className="w-6 h-6 text-white" />
+            <div className="w-10 h-10 md:w-12 md:h-12 flex items-center justify-center transform transition-all group-hover:scale-110 group-hover:rotate-3">
+              <Logo className="w-full h-full object-contain drop-shadow-2xl" />
             </div>
-            <h1 className="text-xl md:text-2xl font-black text-gray-900 tracking-tighter">
+            <h1 className="text-xl md:text-2xl font-black text-gray-900 tracking-tighter" style={{ fontFamily: 'var(--font-heading)' }}>
               Lifeline<span className="text-red-600">Connect</span>
             </h1>
           </div>
@@ -101,11 +99,11 @@ function Header() {
       {/* Sidebar Drawer */}
       <div className={`fixed top-0 left-0 bottom-0 z-[70] w-72 bg-[#0f0f14]/80 backdrop-blur-[16px] border border-white/10 shadow-2xl transition-transform duration-500 ease-out flex flex-col ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         <div className="p-8 border-b border-white/10 flex justify-between items-center">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-gradient-to-br from-red-500 to-red-700 rounded-lg flex items-center justify-center">
-              <BloodDropIcon className="w-5 h-5 text-white" />
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 flex items-center justify-center">
+              <Logo className="w-full h-full object-contain" />
             </div>
-            <span className="text-white font-black tracking-tighter text-xl">Lifeline</span>
+            <span className="text-white font-black tracking-tighter text-xl" style={{ fontFamily: 'var(--font-heading)' }}>Lifeline</span>
           </div>
           <button onClick={() => setIsSidebarOpen(false)} className="text-white/40 hover:text-white transition-colors">
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">

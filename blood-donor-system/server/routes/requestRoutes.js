@@ -5,7 +5,7 @@ import { protect, authorize } from '../middleware/authMiddleware.js';
 
 router.route('/')
   .get(getRequests)
-  .post(protect, authorize('hospital'), createRequest);
+  .post(protect, authorize('hospital', 'donor'), createRequest);
 
 router.route('/:id')
   .get(getRequestById);

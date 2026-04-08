@@ -11,6 +11,7 @@ import { useAuth } from './context/AuthContext';
 import { apiRequest } from './utils/api';
 import { Capacitor } from '@capacitor/core';
 import { PushNotifications } from '@capacitor/push-notifications';
+import { Toaster } from 'react-hot-toast';
 import './App.css';
 
 function App() {
@@ -68,6 +69,7 @@ function App() {
 
   return (
     <BrowserRouter>
+      <Toaster position="top-right" />
       <div className="app-container">
         <Header />
         <main className="main-content pt-28 md:pt-36">

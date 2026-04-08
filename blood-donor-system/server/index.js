@@ -2,11 +2,13 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 import express from 'express';
+import http from 'http';
 import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import connectDB from './config/db.js';
 import { notFound, errorHandler } from './middleware/errorMiddleware.js';
+import { initSocket } from './utils/socket.js';
 
 // Import routes
 import donorRoutes from './routes/donorRoutes.js';
@@ -23,6 +25,9 @@ const PORT = process.env.PORT || 5001;
 
 // Connect to database
 connectDB();
+
+const server = http.createServer(app);
+const io = initSocket(server);
 
 // Middleware
 app.use(cors({
@@ -73,6 +78,6 @@ app.use(notFound);
 app.use(errorHandler);
 
 // Start server
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Server is running on port ${PORT}`);
+server.listen(PORT, '0.0.0.0', () => {
+  console.log(`Server with Socket.io is running on port ${PORT}`);
 });

@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useSocket } from '../context/SocketContext';
+import { apiRequest } from '../utils/api';
 
 const POLL_INTERVAL = 15000; // 15 seconds
 
@@ -7,23 +9,36 @@ function NotificationBell() {
   const [open, setOpen] = useState(false);
   const dropdownRef = useRef(null);
 
-  const unreadCount = notifications.filter((n) => !n.read).length;
+  const unreadCount = Array.isArray(notifications) ? notifications.filter((n) => !n.read).length : 0;
 
   const fetchNotifications = useCallback(async () => {
     try {
       const data = await apiRequest('/api/notifications');
-      setNotifications(data);
+      setNotifications(data?.data || []);
     } catch {
       // Silently fail — polling should not disrupt the UI
     }
   }, []);
 
-  // Initial fetch + polling
+  const socket = useSocket();
+
+  // Initial fetch
   useEffect(() => {
     fetchNotifications();
-    const interval = setInterval(fetchNotifications, POLL_INTERVAL);
-    return () => clearInterval(interval);
   }, [fetchNotifications]);
+
+  // Socket listener for real-time updates
+  useEffect(() => {
+    if (socket) {
+      const handleNewNotification = (notification) => {
+        setNotifications((prev) => [notification, ...prev]);
+        // Trigger vibration or native toast in real mobile app?
+      };
+
+      socket.on('new_notification', handleNewNotification);
+      return () => socket.off('new_notification', handleNewNotification);
+    }
+  }, [socket]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -109,7 +124,7 @@ function NotificationBell() {
 
           {/* List */}
           <div className="max-h-80 overflow-y-auto divide-y divide-gray-50/50">
-            {notifications.length === 0 ? (
+            {(!Array.isArray(notifications) || notifications.length === 0) ? (
               <div className="py-12 text-center">
                 <div className="w-12 h-12 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
                    <svg className="w-6 h-6 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -159,7 +174,7 @@ function NotificationBell() {
           {notifications.length > 0 && (
             <div className="px-4 py-2 border-t border-gray-100 bg-gray-50">
               <p className="text-[10px] text-gray-400 text-center font-medium">
-                Refreshes every 15s · {notifications.length} total
+                Live Updates Active · {notifications.length} total
               </p>
             </div>
           )}

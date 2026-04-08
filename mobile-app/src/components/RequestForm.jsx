@@ -63,12 +63,20 @@ const RequestForm = ({ onSubmit, isLoading }) => {
       <button
         type="submit"
         disabled={isLoading}
-        className="flex items-center justify-center gap-4 w-full h-16 bg-gray-900 text-white font-black uppercase tracking-[0.2em] text-[10px] rounded-2xl transition-all duration-500 hover:bg-red-600 hover:shadow-[0_25px_50px_-12px_rgba(220,38,38,0.4)] active:scale-95 disabled:opacity-50 group"
+        className="flex items-center justify-center gap-4 w-full h-16 bg-gray-900 text-white font-black uppercase tracking-[0.2em] text-[10px] rounded-2xl transition-all duration-500 hover:bg-red-600 hover:shadow-[0_25px_50px_-12px_rgba(220,38,38,0.4)] active:scale-95 disabled:opacity-50 group overflow-hidden relative"
       >
-        <svg className={`w-5 h-5 ${isLoading ? 'animate-spin' : 'group-hover/btn:rotate-12 transition-transform'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-        </svg>
-        <span>{isLoading ? 'Intercepting Heroes...' : 'Trigger Frequency'}</span>
+        <div className={`absolute inset-0 bg-red-600 transition-transform duration-500 ${isLoading ? 'translate-y-0' : 'translate-y-full'}`}></div>
+        <span className="relative z-10">{isLoading ? 'Intercepting Heroes...' : 'Trigger Frequency'}</span>
+        {isLoading ? (
+          <svg className="animate-spin h-5 w-5 text-white relative z-10" fill="none" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+        ) : (
+          <svg className="w-5 h-5 group-hover:rotate-12 transition-transform relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+        )}
       </button>
     </form>
   );

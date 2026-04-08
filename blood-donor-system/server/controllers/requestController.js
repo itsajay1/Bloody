@@ -38,9 +38,9 @@ const createRequest = async (req, res, next) => {
   try {
     const { bloodGroup, location } = req.body;
 
-    if (!bloodGroup || !location || location.lat === undefined || location.lng === undefined) {
+    if (!bloodGroup || !location || typeof location !== 'object' || location.lat === undefined || location.lng === undefined) {
       res.status(400);
-      throw new Error('Please provide bloodGroup and location (lat, lng)');
+      throw new Error('Please provide bloodGroup and valid location object with lat and lng');
     }
 
     const data = await createBloodRequestWithNotifications({ bloodGroup, location });
