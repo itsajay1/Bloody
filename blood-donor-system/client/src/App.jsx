@@ -10,6 +10,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import { useAuth } from './context/AuthContext';
 import { apiRequest } from './utils/api';
 import { requestForToken, onMessageListener } from './firebase';
+import { Toaster } from 'react-hot-toast';
 import './App.css';
 
 function App() {
@@ -42,18 +43,20 @@ function App() {
     const listener = onMessageListener();
     if (listener) {
       listener.then((payload) => {
-        setNotification({
-          title: payload?.notification?.title,
-          body: payload?.notification?.body,
-        });
-        // Simplest alert for foreground notification
-        alert(`${payload?.notification?.title}\n${payload?.notification?.body}`);
-      }).catch((err) => console.log('failed: ', err));
+        if (payload?.notification) {
+          setNotification({
+            title: payload.notification.title || 'New Notification',
+            body: payload.notification.body || '',
+          });
+          alert(`${payload.notification.title}\n${payload.notification.body}`);
+        }
+      }).catch((err) => console.error('FCM listener failed: ', err));
     }
   }, []);
 
   return (
     <BrowserRouter>
+      <Toaster position="top-right" />
       <div className="app-container">
         <Header />
         <main className="main-content pt-28 md:pt-36">

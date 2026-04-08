@@ -2,6 +2,7 @@ import Request from '../models/Request.js';
 import Notification from '../models/Notification.js';
 import { findEligibleNearbyDonors } from './donorService.js';
 import { sendPushNotification } from './firebaseService.js';
+import { emitToUser } from '../utils/socket.js';
 
 export const createBloodRequestWithNotifications = async ({ bloodGroup, location }) => {
   // Save the request
@@ -35,6 +36,17 @@ export const createBloodRequestWithNotifications = async ({ bloodGroup, location
         body: `Someone nearby needs ${bloodGroup} blood. Please check your app to respond.`
       });
     }
+
+    // Real-time Socket.io Notification
+    matchingDonors.forEach((donor, index) => {
+      const notification = notifications[index];
+      if (donor.user) {
+        emitToUser(donor.user.toString(), 'new_notification', {
+          ...notification,
+          createdAt: new Date()
+        });
+      }
+    });
   }
 
   return { request, matchingDonors, notified: matchingDonors.length };

@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useSocket } from '../context/SocketContext';
+import { apiRequest } from '../utils/api';
 
 const POLL_INTERVAL = 15000; // 15 seconds
 
@@ -7,23 +9,36 @@ function NotificationBell() {
   const [open, setOpen] = useState(false);
   const dropdownRef = useRef(null);
 
-  const unreadCount = notifications.filter((n) => !n.read).length;
+  const unreadCount = Array.isArray(notifications) ? notifications.filter((n) => !n.read).length : 0;
 
   const fetchNotifications = useCallback(async () => {
     try {
       const data = await apiRequest('/api/notifications');
-      setNotifications(data);
+      setNotifications(data?.data || []);
     } catch {
       // Silently fail — polling should not disrupt the UI
     }
   }, []);
 
-  // Initial fetch + polling
+  const socket = useSocket();
+
+  // Initial fetch
   useEffect(() => {
     fetchNotifications();
-    const interval = setInterval(fetchNotifications, POLL_INTERVAL);
-    return () => clearInterval(interval);
   }, [fetchNotifications]);
+
+  // Socket listener for real-time updates
+  useEffect(() => {
+    if (socket) {
+      const handleNewNotification = (notification) => {
+        setNotifications((prev) => [notification, ...prev]);
+        // Trigger a simple visual feedback or native toast if needed
+      };
+
+      socket.on('new_notification', handleNewNotification);
+      return () => socket.off('new_notification', handleNewNotification);
+    }
+  }, [socket]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -159,7 +174,7 @@ function NotificationBell() {
           {notifications.length > 0 && (
             <div className="px-4 py-2 border-t border-gray-100 bg-gray-50">
               <p className="text-[10px] text-gray-400 text-center font-medium">
-                Refreshes every 15s · {notifications.length} total
+                Live Updates Active · {notifications.length} total
               </p>
             </div>
           )}

@@ -1,6 +1,8 @@
 import Donor from '../models/Donor.js';
 import User from '../models/User.js';
 import { successResponse } from '../utils/responseWrapper.js';
+import { broadcast } from '../utils/socket.js';
+import { check90DaysEligibility } from '../services/donorService.js';
 
 // @desc    Get all donors
 // @route   GET /api/donor
@@ -33,6 +35,7 @@ const createDonor = async (req, res, next) => {
       donor.lastDonationDate = lastDonationDate || donor.lastDonationDate;
       
       await donor.save();
+      broadcast('donor_status_updated', { donorId: donor._id, status: 'updated', donor });
       successResponse(res, 'Donor profile updated successfully', donor);
     } else {
       // Create new donor profile
@@ -61,6 +64,7 @@ const createDonor = async (req, res, next) => {
         await user.save();
       }
 
+      broadcast('donor_status_updated', { donorId: donor._id, status: 'created', donor });
       successResponse(res, 'Donor profile created successfully', donor, 201);
     }
   } catch (error) {
@@ -100,10 +104,19 @@ const addDonation = async (req, res, next) => {
     const donor = await Donor.findOne({ user: req.user._id });
 
     if (donor) {
+      // Check 90-day eligibility
+      if (!check90DaysEligibility(donor.lastDonationDate)) {
+        res.status(400);
+        throw new Error('Medical Safety Alert: You must wait 90 days between donations.');
+      }
+
       const newDonationDate = new Date();
       donor.donationHistory.push({ date: newDonationDate, hospital });
       donor.lastDonationDate = newDonationDate;
+      donor.available = false; // Auto-standby after donation
       await donor.save();
+
+      broadcast('donor_status_updated', { donorId: donor._id, status: 'donated', available: false });
 
       successResponse(res, 'Donation added successfully', donor);
     } else {
@@ -126,6 +139,8 @@ const toggleAvailability = async (req, res, next) => {
       donor.available = !donor.available;
       await donor.save();
 
+      broadcast('donor_status_updated', { donorId: donor._id, status: 'availability_toggle', available: donor.available });
+      
       successResponse(res, `Availability updated to ${donor.available ? 'Available' : 'Unavailable'}`, {
         available: donor.available
       });

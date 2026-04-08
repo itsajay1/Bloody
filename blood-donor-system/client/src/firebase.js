@@ -23,10 +23,14 @@ export const requestForToken = async () => {
   if (!messaging) return null;
 
   try {
-    const currentToken = await getToken(messaging, { 
-      // VAPID key is required for web push notifications. Add to .env when available.
-      vapidKey: import.meta.env.VITE_FIREBASE_VAPID_KEY || 'YOUR_VAPID_KEY_PLACEHOLDER' 
-    });
+    const vapidKey = import.meta.env.VITE_FIREBASE_VAPID_KEY || 'YOUR_VAPID_KEY_PLACEHOLDER';
+    
+    if (vapidKey === 'YOUR_VAPID_KEY_PLACEHOLDER') {
+      console.warn('FCM: VAPID key not configured. Skipping token generation.');
+      return null;
+    }
+
+    const currentToken = await getToken(messaging, { vapidKey });
     
     if (currentToken) {
       console.log('FCM Token generated:', currentToken);
