@@ -1,6 +1,6 @@
 import express from 'express';
 const router = express.Router();
-import { getRequests, createRequest, getRequestById } from '../controllers/requestController.js';
+import { getRequests, createRequest, getRequestById, acceptRequest } from '../controllers/requestController.js';
 import { protect, authorize } from '../middleware/authMiddleware.js';
 
 router.route('/')
@@ -9,5 +9,8 @@ router.route('/')
 
 router.route('/:id')
   .get(getRequestById);
+
+router.route('/:id/accept')
+  .post(protect, authorize('donor'), acceptRequest);
 
 export default router;

@@ -45,7 +45,7 @@ function Header() {
               <Logo className="w-full h-full object-contain drop-shadow-2xl" />
             </div>
             <h1 className="text-xl md:text-2xl font-black text-gray-900 tracking-tighter" style={{ fontFamily: 'var(--font-heading)' }}>
-              Lifeline<span className="text-red-600">Connect</span>
+              Find<span className="text-red-600">One</span>
             </h1>
           </div>
           
@@ -103,7 +103,7 @@ function Header() {
             <div className="w-10 h-10 flex items-center justify-center">
               <Logo className="w-full h-full object-contain" />
             </div>
-            <span className="text-white font-black tracking-tighter text-xl" style={{ fontFamily: 'var(--font-heading)' }}>Lifeline</span>
+            <span className="text-white font-black tracking-tighter text-xl" style={{ fontFamily: 'var(--font-heading)' }}>Find<span className="text-red-500">One</span></span>
           </div>
           <button onClick={() => setIsSidebarOpen(false)} className="text-white/40 hover:text-white transition-colors">
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -130,22 +130,22 @@ function Header() {
                 <p className="text-[10px] font-black uppercase text-white/30 tracking-[0.2em]">Profile Access</p>
               </div>
               {renderNavLink('/profile', 'Dashboard', true)}
-              <div className="px-6 py-4 flex items-center justify-between">
-                 <span className="text-white/60 font-bold text-sm">Notifications</span>
-                 <NotificationBell />
-              </div>
+              <NotificationBell inSidebar={true} />
               <button 
                 onClick={handleLogout} 
-                className="w-full flex items-center px-6 py-5 text-gray-400 font-bold hover:text-red-500 hover:bg-red-500/5 transition-all text-left"
+                className="w-full flex items-center gap-3 px-6 py-5 text-gray-400 font-bold hover:text-red-500 hover:bg-red-500/5 transition-all text-left group"
               >
-                Terminate Session
+                <svg className="w-5 h-5 group-hover:text-red-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                </svg>
+                Logout
               </button>
             </div>
           )}
         </nav>
 
         <div className="p-8 border-t border-white/10">
-          <p className="text-[9px] font-black text-white/20 uppercase tracking-[0.3em]">Lifeline Identity v2.0</p>
+          <p className="text-[9px] font-black text-white/20 uppercase tracking-[0.3em]">FindOne v2.0</p>
         </div>
       </div>
     </>

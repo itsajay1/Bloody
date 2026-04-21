@@ -50,6 +50,18 @@ const donorSchema = new mongoose.Schema({
     type: Boolean,
     default: true,
   },
+  responseRate: {
+    type: Number,
+    default: 0.5,
+  },
+  totalRequestsReceived: {
+    type: Number,
+    default: 0,
+  },
+  totalResponses: {
+    type: Number,
+    default: 0,
+  },
   fcmTokens: {
     type: [String],
     default: []

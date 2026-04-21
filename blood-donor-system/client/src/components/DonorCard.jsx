@@ -1,10 +1,14 @@
 import React from 'react';
 
-function DonorCard({ donor }) {
+function DonorCard({ donor, isTopMatch }) {
   return (
-    <div className="relative bg-white/75 backdrop-blur-[12px] border border-white/40 rounded-[2.5rem] shadow-[0_20px_40px_-15px_rgba(220,38,38,0.15)] p-8 overflow-hidden transition-transform duration-500 hover:-translate-y-2 group">
+    <div className={`relative bg-white/75 backdrop-blur-[12px] border ${isTopMatch ? 'border-yellow-400 shadow-[0_20px_40px_-15px_rgba(250,204,21,0.3)]' : 'border-white/40 shadow-[0_20px_40px_-15px_rgba(220,38,38,0.15)]'} rounded-[2.5rem] p-8 overflow-hidden transition-transform duration-500 hover:-translate-y-2 group`}>
       {/* Decorative background flare */}
-      <div className="absolute rounded-full filter blur-[3rem] mix-blend-multiply pointer-events-none z-0 bg-red-100/40 -top-10 -right-10 w-32 h-32 opacity-0 group-hover:opacity-60 transition-opacity duration-700"></div>
+      <div className={`absolute rounded-full filter blur-[3rem] mix-blend-multiply pointer-events-none z-0 ${isTopMatch ? 'bg-yellow-100/50' : 'bg-red-100/40'} -top-10 -right-10 w-32 h-32 opacity-0 group-hover:opacity-60 transition-opacity duration-700`}></div>
+      
+      {isTopMatch && (
+        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-yellow-300 via-yellow-500 to-yellow-600"></div>
+      )}
       
       <div className="flex items-start justify-between mb-6 relative z-10">
         <div className="flex flex-col">
@@ -23,12 +27,25 @@ function DonorCard({ donor }) {
         </div>
       </div>
 
-      <div className="p-4 bg-gray-50/50 rounded-2xl border border-gray-100/50 mb-8 relative z-10">
-        <span className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] block mb-1">Current Status</span>
-        <div className="flex items-center text-green-700 font-bold text-sm">
+      <div className={`p-4 ${isTopMatch ? 'bg-yellow-50/50 border-yellow-100/50' : 'bg-gray-50/50 border-gray-100/50'} rounded-2xl border mb-8 relative z-10`}>
+        <div className="flex justify-between items-center mb-1">
+          <span className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Current Status</span>
+          {donor.recommendationScore !== undefined && (
+            <span className={`text-[10px] font-black ${isTopMatch ? 'text-yellow-600' : 'text-gray-400'} uppercase tracking-[0.1em]`}>
+              Score: {Math.round(donor.recommendationScore * 100)} / 100
+            </span>
+          )}
+        </div>
+        <div className="flex items-center text-green-700 font-bold text-sm mb-2">
           <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"></path></svg>
           Active Donor
         </div>
+        {donor.reason && (
+          <p className="text-xs text-gray-500 font-medium leading-tight">
+            {isTopMatch && <span className="font-bold text-yellow-600 mr-1">Top Match:</span>}
+            {donor.reason}
+          </p>
+        )}
       </div>
       
       <div className="relative z-10">

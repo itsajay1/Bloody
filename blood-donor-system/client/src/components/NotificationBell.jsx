@@ -71,6 +71,28 @@ function NotificationBell() {
     }
   };
 
+  const handleAcceptRequest = async (e, n) => {
+    e.stopPropagation(); // prevent markAsRead trigger on the parent div
+    if (!n.request) return;
+
+    try {
+      // Extract string ID if it's an object (ObjectId), otherwise use directly
+      const requestId = typeof n.request === 'object' ? n.request._id : n.request;
+      
+      // Call accept endpoint
+      await apiRequest(`/api/request/${requestId}/accept`, { method: 'POST' });
+      
+      // Also mark the notification itself as read locally and on server
+      await markAsRead(n._id);
+      
+      // Show success feedback
+      toast.success("Thank you! You've successfully accepted this request.");
+    } catch (error) {
+      console.error("Failed to accept request:", error);
+      toast.error("Could not accept request. Please try again.");
+    }
+  };
+
   const formatTime = (dateStr) => {
     const diff = Date.now() - new Date(dateStr).getTime();
     const mins = Math.floor(diff / 60000);
@@ -160,6 +182,16 @@ function NotificationBell() {
                       <p className={`text-xs leading-relaxed tracking-tight ${!n.read ? 'text-gray-900 font-bold' : 'text-gray-500 font-medium'}`}>
                         {n.message}
                       </p>
+                      {!n.read && n.request && (
+                        <div className="mt-2">
+                          <button
+                            onClick={(e) => handleAcceptRequest(e, n)}
+                            className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white text-xs font-bold rounded-lg shadow-sm shadow-red-500/30 transition-colors"
+                          >
+                            Accept Request
+                          </button>
+                        </div>
+                      )}
                     </div>
                     {!n.read && (
                       <div className="flex-shrink-0 w-2 h-2 bg-red-500 rounded-full mt-2 shadow-[0_0_10px_rgba(239,68,68,0.5)]" />
