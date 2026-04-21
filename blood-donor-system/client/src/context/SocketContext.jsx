@@ -14,7 +14,7 @@ export const SocketProvider = ({ children }) => {
     if (user) {
       // Connect to the socket server
       // WebSockets often require specific transport settings for cross-origin/mobile reliability
-      const serverUrl = import.meta.env.VITE_API_URL;
+      const serverUrl = import.meta.env.VITE_API_URL || '';
       const newSocket = io(serverUrl, {
         transports: ['websocket'],
       });
