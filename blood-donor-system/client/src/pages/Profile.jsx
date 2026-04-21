@@ -280,7 +280,7 @@ function Profile() {
                 <button
                   type="submit"
                   disabled={logStatus?.type === 'loading' || !isEligible()}
-                  className="flex items-center justify-center gap-3 w-full h-16 bg-red-600 text-white font-black uppercase tracking-[0.2em] text-[11px] rounded-[1.25rem] shadow-[0_25px_50px_-12px_rgba(220,38,38,0.2)] transition-all duration-500 hover:bg-red-500 hover:shadow-[0_25px_50px_-12px_rgba(220,38,38,0.4)] hover:-translate-y-1 active:scale-95 disabled:opacity-50 group overflow-hidden relative"
+                  className="flex items-center justify-center gap-3 w-full h-16 bg-red-600 text-white font-black uppercase tracking-[0.2em] text-[11px] rounded-[1.25rem] shadow-[0_25px_50px_-12px_rgba(220,38,38,0.2)] transition-all duration-500 hover:bg-red-500 hover:shadow-[0_25px_50px_-12px_rgba(220,38,38,0.4)] hover:-translate-y-1 active:scale-95 disabled:opacity-50 group overflow-hidden relative font-heading"
                 >
                   <div className={`absolute inset-0 bg-white/10 transition-transform duration-500 ${logStatus?.type === 'loading' ? 'translate-x-0' : '-translate-x-full'}`}></div>
                   <svg className={`w-5 h-5 relative z-10 ${logStatus?.type === 'loading' ? 'animate-spin' : 'group-hover:rotate-12 transition-transform'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M12 4v16m8-8H4"></path></svg>
@@ -305,7 +305,7 @@ function Profile() {
             </div>
           </div>
           
-          <DonationTimeline history={profile.donationHistory} />
+          <DonationTimeline history={profile?.donationHistory || []} />
         </div>
       </div>
     </div>

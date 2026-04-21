@@ -87,7 +87,7 @@ function Login() {
           
           <div className="text-center mb-10">
             <h2 className="text-4xl font-black text-gray-900 mb-3 tracking-tighter leading-none" style={{ fontFamily: 'var(--font-heading)' }}>Welcome Back.</h2>
-            <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Secure Mobile Access</p>
+            <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Secure Authentication Hub</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-8" noValidate>

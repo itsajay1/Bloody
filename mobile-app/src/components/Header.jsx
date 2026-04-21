@@ -16,7 +16,7 @@ function Header() {
   };
 
   const Logo = ({ className }) => (
-    <img src="/logo.png" alt="Lifeline Connect Logo" className={className} />
+    <img src="/logo.png" alt="FindOne Logo" className={className} />
   );
 
   const renderNavLink = (path, text, mobile = false) => {

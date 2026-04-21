@@ -13,6 +13,19 @@ function Profile() {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
 
+  const isEligible = () => {
+    if (!profile?.lastDonationDate) return true;
+    const ninetyDays = 90 * 24 * 60 * 60 * 1000;
+    return (Date.now() - new Date(profile.lastDonationDate).getTime()) > ninetyDays;
+  };
+
+  const getDaysRemaining = () => {
+    if (!profile?.lastDonationDate) return 0;
+    const ninetyDays = 90 * 24 * 60 * 60 * 1000;
+    const remaining = ninetyDays - (Date.now() - new Date(profile.lastDonationDate).getTime());
+    return Math.max(0, Math.ceil(remaining / (1000 * 60 * 60 * 24)));
+  };
+
   useEffect(() => {
     const fetchProfile = async () => {
       if (!user) {
@@ -59,7 +72,7 @@ function Profile() {
         body: JSON.stringify({ hospital })
       });
 
-      setProfile(data.donor); // Server returns updated donor
+      setProfile(data.data); // Server returns updated donor in .data
       setLogStatus({ type: 'success', message: 'Donation securely logged!' });
       setHospital('');
       
@@ -76,7 +89,7 @@ function Profile() {
         method: 'PUT',
       });
 
-      setProfile(prev => ({ ...prev, available: data.available }));
+      setProfile(prev => ({ ...prev, available: data.data.available }));
       setToggleStatus(null);
     } catch (error) {
       console.error(error);
@@ -109,26 +122,13 @@ function Profile() {
     )
   }
 
-  const isEligible = () => {
-    if (!profile?.lastDonationDate) return true;
-    const ninetyDays = 90 * 24 * 60 * 60 * 1000;
-    return (Date.now() - new Date(profile.lastDonationDate).getTime()) > ninetyDays;
-  };
-
-  const getDaysRemaining = () => {
-    if (!profile?.lastDonationDate) return 0;
-    const ninetyDays = 90 * 24 * 60 * 60 * 1000;
-    const remaining = ninetyDays - (Date.now() - new Date(profile.lastDonationDate).getTime());
-    return Math.ceil(remaining / (1000 * 60 * 60 * 24));
-  };
-
   if (profile?.role === 'hospital') {
       return (
         <div className="max-w-6xl mx-auto py-24 px-6 lg:px-8 animate-fade-in-up">
             <div className="bg-white/75 backdrop-blur-[12px] border border-white/60 rounded-[3rem] shadow-[0_20px_40px_-15px_rgba(220,38,38,0.15)] p-10 relative overflow-hidden group">
                 <div className="absolute -top-20 -right-20 w-48 h-48 bg-red-100/40 rounded-full blur-3xl z-0 pointer-events-none"></div>
                 <div className="relative z-10 text-center">
-                    <div className="w-28 h-28 flex items-center justify-center mb-6 mx-auto transition-transform hover:scale-110">
+                    <div className="w-28 h-28 flex items-center justify-center mb-6 mx-auto">
                         <img src="/logo.png" alt="Logo" className="w-full h-full object-contain" />
                     </div>
                     <h2 className="text-4xl font-black text-gray-900 tracking-tighter mb-2" style={{ fontFamily: 'var(--font-heading)' }}>{profile.name}</h2>
@@ -171,7 +171,7 @@ function Profile() {
                 </svg>
                 <span className="text-4xl font-black text-white tracking-tighter relative z-10">{profile?.bloodGroup || '?'}</span>
               </div>
-              <h2 className="text-3xl font-black text-gray-900 tracking-tighter mb-2">{profile?.name || 'Identity Found'}</h2>
+              <h2 className="text-3xl font-black text-gray-900 tracking-tighter mb-2">{profile.name}</h2>
               <div className="flex flex-col items-center gap-4">
                 <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-500 
                   ${!isEligible() 
@@ -190,7 +190,7 @@ function Profile() {
                         style={{ width: `${Math.max(5, 100 - (getDaysRemaining() / 90 * 100))}%` }}
                       ></div>
                     </div>
-                    <p className="text-[8px] font-bold text-gray-400 mt-1">{getDaysRemaining()} cycles until re-activation</p>
+                    <p className="text-[8px] font-bold text-gray-400 mt-1">{getDaysRemaining()} days until re-activation</p>
                   </div>
                 )}
                 <button 
@@ -213,7 +213,7 @@ function Profile() {
                 </div>
                 <div className="min-w-0">
                   <label className="text-[9px] font-black text-gray-400 uppercase tracking-[0.2em] block mb-0.5">Frequency</label>
-                  <p className="font-bold text-gray-900 truncate tracking-tight">{profile?.email}</p>
+                  <p className="font-bold text-gray-900 truncate tracking-tight">{profile.email}</p>
                 </div>
               </div>
               <div className="flex items-center group/item">
@@ -222,7 +222,7 @@ function Profile() {
                 </div>
                 <div>
                   <label className="text-[9px] font-black text-gray-400 uppercase tracking-[0.2em] block mb-0.5">Secure Line</label>
-                  <p className="font-bold text-gray-900 tracking-tight">{profile?.phone}</p>
+                  <p className="font-bold text-gray-900 tracking-tight">{profile.phone}</p>
                 </div>
               </div>
               <div className="flex items-center group/item">
@@ -231,7 +231,7 @@ function Profile() {
                 </div>
                 <div>
                   <label className="text-[9px] font-black text-gray-400 uppercase tracking-[0.2em] block mb-0.5">Registry Bio</label>
-                  <p className="font-bold text-gray-900 tracking-tight">{profile?.age} Cycles Old</p>
+                  <p className="font-bold text-gray-900 tracking-tight">{profile.age} Cycles Old</p>
                 </div>
               </div>
             </div>

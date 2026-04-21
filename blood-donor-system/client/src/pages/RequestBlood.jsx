@@ -21,7 +21,6 @@ function RequestBlood() {
         
         setDonors((prevDonors) => {
           if (updateType === 'availability_toggle') {
-            // Remove if now unavailable, otherwise keep (or re-fetch if we want to be thorough)
             return available 
               ? prevDonors 
               : prevDonors.filter(d => d._id !== donorId);

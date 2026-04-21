@@ -51,7 +51,7 @@ function RequestBlood() {
         }),
       });
 
-      const matched = data.matchingDonors || [];
+      const matched = data?.data?.matchingDonors || [];
       setDonors(matched);
       
       if (matched.length === 0) {
@@ -106,9 +106,9 @@ function RequestBlood() {
             </div>
             
             <div className="flex flex-col gap-6">
-              {donors.map((donor) => (
+              {donors.map((donor, index) => (
                 <div key={donor._id} className="relative z-0 group w-full">
-                  <DonorCard donor={donor} />
+                  <DonorCard donor={donor} isTopMatch={index === 0} />
                 </div>
               ))}
             </div>

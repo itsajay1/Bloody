@@ -231,7 +231,7 @@ function RegisterDonor() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full h-20 flex items-center justify-center gap-4 bg-gray-900 text-white font-black uppercase tracking-[0.2em] text-[10px] rounded-[2rem] transition-all duration-500 hover:bg-red-600 hover:shadow-[0_25px_50px_-12px_rgba(220,38,38,0.4)] hover:-translate-y-1 active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed group mt-12 overflow-hidden relative"
+              className="w-full h-20 flex items-center justify-center gap-4 bg-gray-900 text-white font-black uppercase tracking-[0.2em] text-[10px] rounded-[2rem] transition-all duration-500 hover:bg-red-600 hover:shadow-[0_25px_50px_-12px_rgba(220,38,38,0.4)] hover:-translate-y-1 active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed group mt-12 overflow-hidden relative font-heading"
             >
               <div className={`absolute inset-0 bg-red-600 transition-transform duration-500 ${isLoading ? 'translate-y-0' : 'translate-y-full'}`}></div>
               <span className="relative z-10">{isLoading ? 'Initializing Identity...' : 'Confirm Registration'}</span>

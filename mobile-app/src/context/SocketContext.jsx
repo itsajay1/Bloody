@@ -13,16 +13,18 @@ export const SocketProvider = ({ children }) => {
   useEffect(() => {
     if (user) {
       // Connect to the socket server
-      // WebSockets on mobile often require the full host address for real devices
+      // WebSockets often require specific transport settings for cross-origin/mobile reliability
       const serverUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001';
       const newSocket = io(serverUrl, {
-        transports: ['websocket'], // Often better for mobile cross-origin
+        transports: ['websocket'],
       });
       
       setSocket(newSocket);
 
       // Join personal room based on user ID for targeted events
-      newSocket.emit('join', user.id);
+      if (user._id || user.id) {
+        newSocket.emit('join', user._id || user.id);
+      }
 
       return () => newSocket.close();
     } else if (socket) {

@@ -12,19 +12,24 @@ export const SocketProvider = ({ children }) => {
 
   useEffect(() => {
     if (user) {
-      // Create socket connection
-      const newSocket = io(import.meta.env.VITE_API_URL || 'http://localhost:5001');
+      // Connect to the socket server
+      // WebSockets often require specific transport settings for cross-origin/mobile reliability
+      const serverUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+      const newSocket = io(serverUrl, {
+        transports: ['websocket'],
+      });
+      
       setSocket(newSocket);
 
-      // Join personal room for targeted notifications
-      newSocket.emit('join', user.id);
+      // Join personal room based on user ID for targeted events
+      if (user._id || user.id) {
+        newSocket.emit('join', user._id || user.id);
+      }
 
       return () => newSocket.close();
-    } else {
-      if (socket) {
-        socket.close();
-        setSocket(null);
-      }
+    } else if (socket) {
+      socket.close();
+      setSocket(null);
     }
   }, [user]);
 

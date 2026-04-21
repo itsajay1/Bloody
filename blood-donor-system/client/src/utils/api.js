@@ -40,7 +40,7 @@ export const apiRequest = async (endpoint, options = {}) => {
 
     // Handle Network Errors (TypeError: Failed to fetch)
     if (error instanceof TypeError && error.message.includes('fetch')) {
-      friendlyMessage = 'Server Unreachable. Please check your internet connection or try again later.';
+      friendlyMessage = 'Server Unreachable (Mobile Bridge). Please check your internet connection or try again later.';
     }
 
     console.error(`API Error [${endpoint}]:`, error);
