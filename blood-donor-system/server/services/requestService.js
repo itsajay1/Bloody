@@ -1,5 +1,6 @@
 import Request from '../models/Request.js';
 import Notification from '../models/Notification.js';
+import Donor from '../models/Donor.js';
 import { findEligibleNearbyDonors } from './donorService.js';
 import { sendPushNotification } from './firebaseService.js';
 import { emitToUser } from '../utils/socket.js';
@@ -23,6 +24,13 @@ export const createBloodRequestWithNotifications = async ({ bloodGroup, location
       message: `Urgent: Someone nearby needs ${bloodGroup} blood. You are one of the closest available donors (${donor.distance.toFixed(1)}km away).`,
     }));
     await Notification.insertMany(notifications);
+
+    // Increment totalRequestsReceived for these donors
+    const donorIds = matchingDonors.map(donor => donor._id);
+    await Donor.updateMany(
+      { _id: { $in: donorIds } },
+      { $inc: { totalRequestsReceived: 1 } }
+    );
 
     // Dispatch FCM Push Notification to all extracted tokens
     const fcmTokens = matchingDonors

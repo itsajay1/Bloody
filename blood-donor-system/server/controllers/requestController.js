@@ -1,4 +1,5 @@
 import Request from '../models/Request.js';
+import Donor from '../models/Donor.js';
 import { createBloodRequestWithNotifications } from '../services/requestService.js';
 import { successResponse } from '../utils/responseWrapper.js';
 
@@ -51,5 +52,40 @@ const createRequest = async (req, res, next) => {
   }
 };
 
-export { getRequests, getRequestById, createRequest };
+// @desc    Accept blood request
+// @route   POST /api/request/:id/accept
+// @access  Private (Donor only)
+const acceptRequest = async (req, res, next) => {
+  try {
+    const request = await Request.findById(req.params.id);
+    if (!request) {
+      res.status(404);
+      throw new Error('Request not found');
+    }
+
+    const donor = await Donor.findOne({ user: req.user._id });
+    if (!donor) {
+      res.status(404);
+      throw new Error('Donor profile not found');
+    }
+
+    // Update donor response metrics
+    donor.totalResponses = (donor.totalResponses || 0) + 1;
+    
+    // Ensure we don't divide by zero
+    const requestsReceived = donor.totalRequestsReceived > 0 ? donor.totalRequestsReceived : 1;
+    donor.responseRate = donor.totalResponses / requestsReceived;
+    
+    // Cap at 1.0 just in case there's an anomaly where totalResponses > totalRequestsReceived
+    if (donor.responseRate > 1.0) donor.responseRate = 1.0;
+
+    await donor.save();
+
+    successResponse(res, 'Request accepted and response rate updated', { responseRate: donor.responseRate });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export { getRequests, getRequestById, createRequest, acceptRequest };
 

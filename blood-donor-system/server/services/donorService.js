@@ -1,17 +1,5 @@
 import Donor from '../models/Donor.js';
-
-// Haversine formula to calculate distance between two coordinates in kilometers
-export const calculateDistance = (lat1, lon1, lat2, lon2) => {
-  const R = 6371; // Radius of the Earth in km
-  const dLat = (lat2 - lat1) * (Math.PI / 180);
-  const dLon = (lon2 - lon1) * (Math.PI / 180);
-  const a =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) *
-    Math.sin(dLon / 2) * Math.sin(dLon / 2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return R * c;
-};
+import { calculateDistance, rankDonors } from './recommendationService.js';
 
 // Check if a donor is eligible based on their last donation date (90 days interval)
 export const check90DaysEligibility = (lastDonationDate) => {
@@ -39,8 +27,8 @@ export const findEligibleNearbyDonors = async ({ bloodGroup, location, radiusKm 
     available: true
   });
 
-  // Calculate distance, filter eligible, sort and limit
-  const matchingDonors = potentialDonors
+  // Calculate distance, filter by distance initially
+  const nearbyDonors = potentialDonors
     .map(donor => {
       const distance = calculateDistance(
         location.lat,
@@ -48,12 +36,16 @@ export const findEligibleNearbyDonors = async ({ bloodGroup, location, radiusKm 
         donor.location.lat,
         donor.location.lng
       );
-      return { ...donor.toObject(), distance };
+      return { 
+        ...donor.toObject(), 
+        distance,
+        isEligible: check90DaysEligibility(donor.lastDonationDate)
+      };
     })
-    .filter(donor => donor.distance <= radiusKm) // Filter by distance
-    .filter(donor => check90DaysEligibility(donor.lastDonationDate)) // Filter by eligibility
-    .sort((a, b) => a.distance - b.distance) // Sort by nearest
-    .slice(0, limit); // Limit
+    .filter(donor => donor.distance <= radiusKm); // Filter by distance
+
+  // Use Recommendation System to score and rank donors
+  const matchingDonors = rankDonors(nearbyDonors, radiusKm, limit);
 
   return matchingDonors;
 };
