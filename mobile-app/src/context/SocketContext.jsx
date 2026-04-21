@@ -2,6 +2,8 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { io } from 'socket.io-client';
 import { useAuth } from './AuthContext';
 
+import { BASE_URL } from '../config.js';
+
 const SocketContext = createContext();
 
 export const useSocket = () => useContext(SocketContext);
@@ -14,7 +16,7 @@ export const SocketProvider = ({ children }) => {
     if (user) {
       // Connect to the socket server
       // WebSockets often require specific transport settings for cross-origin/mobile reliability
-      const serverUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+      const serverUrl = BASE_URL;
       const newSocket = io(serverUrl, {
         transports: ['websocket'],
       });

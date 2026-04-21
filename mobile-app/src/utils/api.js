@@ -1,10 +1,12 @@
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+import { BASE_URL } from '../config.js';
+
+const API_URL = BASE_URL;
 
 /**
  * Standard fetch wrapper for Lifeline Connect
  * Automatically handles JWT injection and response unwrapping.
  */
-export const apiRequest = async (endpoint, options = {}) => {
+export const apiRequest = async (endpoint, options = {}, retries = 1) => {
   const userInfo = JSON.parse(localStorage.getItem('userInfo'));
   const token = userInfo?.token;
 
@@ -36,6 +38,13 @@ export const apiRequest = async (endpoint, options = {}) => {
 
     return data;
   } catch (error) {
+    // Implement Cold Start Retry Logic for sleeping servers
+    if (retries > 0 && (error instanceof TypeError && error.message.includes('fetch'))) {
+      console.warn(`[Cold Start Detection] Server unreachable, retrying ${endpoint} exactly once in 2.5s...`);
+      await new Promise(res => setTimeout(res, 2500));
+      return apiRequest(endpoint, options, retries - 1);
+    }
+    
     let friendlyMessage = error.message;
 
     // Handle Network Errors (TypeError: Failed to fetch)

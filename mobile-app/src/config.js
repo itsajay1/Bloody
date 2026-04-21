@@ -1,7 +1,2 @@
-// Using 'localhost' for adb reverse port forwarding
-// This is the MOST reliable method for Android emulators.
-// Port: 5001
-
-const API_BASE_URL = 'http://localhost:5001';
-
-export default API_BASE_URL;
+// Core configuration values for the Mobile application
+export const BASE_URL = 'https://bloody-6zmr.onrender.com';
