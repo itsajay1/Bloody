@@ -40,7 +40,7 @@ function RequestBlood() {
   const handleRequestSearch = async ({ bloodGroup, location }) => {
     setDonors([]);
     setLastLocation(location);
-    const loadingToast = toast.loading('Searching for matching heroes...');
+    const loadingToast = toast.loading('Searching for matching donors...');
 
     try {
       const data = await apiRequest('/api/request', {
@@ -55,7 +55,7 @@ function RequestBlood() {
       setDonors(matched);
       
       if (matched.length === 0) {
-        toast.error(`No available heroes found for ${bloodGroup}. Request logged.`, { id: loadingToast });
+        toast.error(`No available donors found for ${bloodGroup}. Request logged.`, { id: loadingToast });
       } else {
         toast.success(`Found ${matched.length} matching donor(s)!`, { id: loadingToast });
       }
@@ -79,7 +79,7 @@ function RequestBlood() {
               Emergency <br/><span className="bg-gradient-to-br from-red-500 to-red-700 bg-clip-text text-transparent">Broadcast</span>
             </h2>
             <p className="text-gray-500 font-medium text-lg leading-relaxed max-w-lg mx-auto">
-              Identify and connect with nearby heroes instantly.
+              Identify and connect with nearby donors instantly.
             </p>
           </div>
           
@@ -97,7 +97,7 @@ function RequestBlood() {
           <div>
             <div className="flex items-end justify-between mb-8 px-4">
               <div>
-                <h3 className="text-3xl font-black text-gray-900 tracking-tighter leading-none mb-2">Available Heroes</h3>
+                <h3 className="text-3xl font-black text-gray-900 tracking-tighter leading-none mb-2">Available Donors</h3>
                 <p className="text-xs font-black text-gray-400 uppercase tracking-[0.2em]">Showing matching donors in your vicinity</p>
               </div>
               <div className="h-12 w-12 bg-red-600 text-white rounded-2xl flex items-center justify-center font-black shadow-lg shadow-red-500/30">

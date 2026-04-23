@@ -30,19 +30,33 @@ const server = http.createServer(app);
 const io = initSocket(server);
 
 // Middleware
-// Test Instructions: Open https://bloody-6zmr.onrender.com/api/health from another device to verify JSON response
+
+// 1. Detailed Request Logging (Top priority for debugging)
+app.use((req, res, next) => {
+  const origin = req.headers.origin || 'No Origin';
+  const userAgent = req.headers['user-agent'] || 'No User Agent';
+  const referer = req.headers.referer || 'No Referer';
+  console.log(`[${new Date().toISOString()}] ${req.method} ${req.path} - Origin: ${origin} - Referer: ${referer} - UA: ${userAgent}`);
+  next();
+});
+
+// 2. Optimized CORS for Mobile (Capacitor) and Web
 app.use(cors({
-  origin: ["http://localhost:5173", "http://localhost:5001", "https://bloody-6zmr.onrender.com"],
+  origin: (origin, callback) => {
+    // In Capacitor/Mobile, origin can be missing, http://localhost, or capacitor://localhost
+    // We allow all origins but must reflect the exact origin for credentials to work
+    if (!origin) return callback(null, true);
+    
+    // Always allow localhost and Render domains
+    callback(null, true);
+  },
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  credentials: true
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin', 'Access-Control-Allow-Origin'],
+  credentials: true,
+  optionsSuccessStatus: 204
 }));
 app.options("*", cors());
 
-// Request Logging Middleware
-app.use((req, res, next) => {
-  console.log(`[${new Date().toISOString()}] ${req.method} ${req.path}`);
-  next();
-});
 app.use(express.json());
 
 // API Routes

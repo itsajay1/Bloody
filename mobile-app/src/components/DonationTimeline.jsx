@@ -10,7 +10,7 @@ function DonationTimeline({ history }) {
           </svg>
         </div>
         <h4 className="text-xl font-black text-gray-900 mb-2 tracking-tight">The Journey Awaits.</h4>
-        <p className="text-gray-400 font-medium text-lg px-8">Your legacy of heroism is yet to be written. Log your first contribution above.</p>
+        <p className="text-gray-400 font-medium text-lg px-8">Your legacy of donorism is yet to be written. Log your first contribution above.</p>
       </div>
     );
   }

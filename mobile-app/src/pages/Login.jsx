@@ -98,7 +98,7 @@ function Login() {
               value={formData.email}
               onChange={handleChange}
               error={errors.email}
-              placeholder="hero@lifeline.com"
+              placeholder="donor@lifeline.com"
             />
 
             <InputField
@@ -130,7 +130,7 @@ function Login() {
           <div className="mt-12 text-center">
             <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">
               New to the Network?{' '}
-              <Link to="/register" className="text-red-600 hover:text-red-700 transition-all font-black ml-1 border-b-2 border-red-100 hover:border-red-600 pb-0.5">Initialize Identity</Link>
+              <Link to="/register" className="text-red-600 hover:text-red-700 transition-all font-black ml-1 border-b-2 border-red-100 hover:border-red-600 pb-0.5">Sign Up</Link>
             </p>
           </div>
         </div>

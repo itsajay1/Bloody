@@ -1,111 +1,107 @@
-import React, { useMemo } from 'react';
-import { GoogleMap, useJsApiLoader, Marker, InfoWindow } from '@react-google-maps/api';
+import React, { useEffect } from 'react';
+import { MapContainer, TileLayer, Marker, Popup, useMap, ZoomControl } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
+import L from 'leaflet';
 
-const mapContainerStyle = {
-  width: '100%',
-  height: '100%',
-  borderRadius: '1.5rem',
+// Fix for default marker icons in React Leaflet
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+});
+
+// Custom icons
+const redIcon = new L.Icon({
+  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41]
+});
+
+const blueIcon = new L.Icon({
+  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41]
+});
+
+// Component to handle map bounds when donors change
+const BoundsUpdater = ({ centerLocation, donors }) => {
+  const map = useMap();
+
+  useEffect(() => {
+    if (donors && donors.length > 0 && centerLocation) {
+      const bounds = L.latLngBounds([centerLocation.lat, centerLocation.lng], [centerLocation.lat, centerLocation.lng]);
+      donors.forEach(donor => {
+        if (donor.location && donor.location.lat && donor.location.lng) {
+          bounds.extend([donor.location.lat, donor.location.lng]);
+        }
+      });
+      map.fitBounds(bounds, { padding: [50, 50] });
+    } else if (centerLocation) {
+      map.setView([centerLocation.lat, centerLocation.lng], 12);
+    }
+  }, [map, centerLocation, donors]);
+
+  return null;
 };
 
 const MapDisplay = ({ centerLocation, donors = [] }) => {
-  const [activeMarker, setActiveMarker] = React.useState(null);
-
-  const { isLoaded } = useJsApiLoader({
-    id: 'google-map-script',
-    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || 'PLACEHOLDER_KEY'
-  });
-
-  // Calculate bounding bounds to fit both requester and donors inside the map view
-  const mapCenter = useMemo(() => {
-    return centerLocation ? { lat: centerLocation.lat, lng: centerLocation.lng } : { lat: 27.7172, lng: 85.324 }; // Defaults to Kathmandu
-  }, [centerLocation]);
-
-  const onLoad = React.useCallback((map) => {
-    if (donors.length > 0 && centerLocation) {
-      const bounds = new window.google.maps.LatLngBounds();
-      bounds.extend(new window.google.maps.LatLng(centerLocation.lat, centerLocation.lng));
-      donors.forEach(donor => {
-        if (donor.location && donor.location.lat && donor.location.lng) {
-            bounds.extend(new window.google.maps.LatLng(donor.location.lat, donor.location.lng));
-        }
-      });
-      // Add a little padding constraint so markers aren't pinned to the exact edge
-      map.fitBounds(bounds, 50); 
-    }
-  }, [centerLocation, donors]);
-
-  if (!isLoaded) return (
-    <div className="w-full h-full flex items-center justify-center bg-gray-100 rounded-3xl animate-pulse">
-        <p className="text-xs font-black uppercase tracking-widest text-gray-400">Loading Mapping Subsystem...</p>
-    </div>
-  );
+  const mapCenter = centerLocation ? [centerLocation.lat, centerLocation.lng] : [27.7172, 85.324];
 
   return (
-    <div className="w-full h-full rounded-[1.5rem] overflow-hidden shadow-inner border border-gray-200">
-      <GoogleMap
-        mapContainerStyle={mapContainerStyle}
+    <div className="w-full h-full rounded-[2.5rem] overflow-hidden shadow-inner border border-gray-200" style={{ zIndex: 0 }}>
+      <MapContainer
         center={mapCenter}
         zoom={12}
-        onLoad={onLoad}
-        options={{
-          disableDefaultUI: true,
-          zoomControl: true,
-          styles: [
-            {
-              "featureType": "all",
-              "elementType": "labels.text.fill",
-              "stylers": [{"color": "#7c93a3"},{"lightness": "-10"}]
-            },
-            {
-              "featureType": "water",
-              "elementType": "geometry.fill",
-              "stylers": [{"color": "#e9e9e9"},{"lightness": "17"}]
-            }
-          ]
-        }}
+        style={{ width: '100%', height: '100%', zIndex: 0 }}
+        zoomControl={false}
       >
-        {/* Requester Marker (Red, Default) */}
+        <TileLayer
+          url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        />
+        <ZoomControl position="bottomright" />
+        <BoundsUpdater centerLocation={centerLocation} donors={donors} />
+
+        {/* Requester Marker */}
         {centerLocation && (
-          <Marker
-            position={{ lat: centerLocation.lat, lng: centerLocation.lng }}
-            icon={"http://maps.google.com/mapfiles/ms/icons/red-dot.png"}
-            onClick={() => setActiveMarker('requester')}
-          >
-            {activeMarker === 'requester' && (
-              <InfoWindow onCloseClick={() => setActiveMarker(null)}>
-                <div className="text-gray-900 font-bold p-1">
-                  <p className="text-xs font-black text-red-600 uppercase tracking-wider mb-1">Emergency Here</p>
-                  <p className="text-[10px] text-gray-500">Center of radius</p>
-                </div>
-              </InfoWindow>
-            )}
+          <Marker position={[centerLocation.lat, centerLocation.lng]} icon={redIcon}>
+            <Popup>
+              <div className="text-gray-900 font-bold p-1 text-center">
+                <p className="text-xs font-black text-red-600 uppercase tracking-wider mb-1">Emergency Here</p>
+                <p className="text-[10px] text-gray-500 m-0">Center of radius</p>
+              </div>
+            </Popup>
           </Marker>
         )}
 
-        {/* Nearby Donors Markers (Blue) */}
+        {/* Nearby Donors Markers */}
         {donors.map((donor, idx) => {
-            if (!donor.location || !donor.location.lat || !donor.location.lng) return null;
-            
-            return (
-                <Marker
-                    key={donor._id || idx}
-                    position={{ lat: donor.location.lat, lng: donor.location.lng }}
-                    icon={"http://maps.google.com/mapfiles/ms/icons/blue-dot.png"}
-                    onClick={() => setActiveMarker(donor._id)}
-                >
-                    {activeMarker === donor._id && (
-                    <InfoWindow onCloseClick={() => setActiveMarker(null)}>
-                        <div className="text-gray-900 font-bold p-1">
-                        <p className="text-xs font-black text-blue-600 uppercase tracking-wider mb-1">Matched Donor</p>
-                        <p className="text-[10px] text-gray-800">{donor.name} • {donor.bloodGroup}</p>
-                        <p className="text-[10px] text-gray-500 mt-1">{donor.distance ? `${donor.distance.toFixed(1)} km away` : 'Nearby'}</p>
-                        </div>
-                    </InfoWindow>
-                    )}
-                </Marker>
-            );
+          if (!donor.location || !donor.location.lat || !donor.location.lng) return null;
+
+          return (
+            <Marker
+              key={donor._id || idx}
+              position={[donor.location.lat, donor.location.lng]}
+              icon={blueIcon}
+            >
+              <Popup>
+                <div className="text-gray-900 font-bold p-1 text-center">
+                  <p className="text-xs font-black text-blue-600 uppercase tracking-wider mb-1">Matched Donor</p>
+                  <p className="text-[10px] text-gray-800 m-0 mb-1">{donor.name} • {donor.bloodGroup}</p>
+                  <p className="text-[10px] text-gray-500 m-0">{donor.distance ? `${donor.distance.toFixed(1)} km away` : 'Nearby'}</p>
+                </div>
+              </Popup>
+            </Marker>
+          );
         })}
-      </GoogleMap>
+      </MapContainer>
     </div>
   );
 };

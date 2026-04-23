@@ -61,7 +61,7 @@ function Header() {
                   to="/register" 
                   className="px-5 py-1.5 rounded-xl font-black transition-all duration-300 bg-gray-900 text-white hover:bg-red-600 shadow-lg transform hover:-translate-y-0.5 text-xs uppercase tracking-widest"
                 >
-                  Join
+                  Sign Up
                 </Link>
               </div>
             ) : (
@@ -122,7 +122,7 @@ function Header() {
           {!user ? (
             <div className="mt-8 px-6 space-y-4">
               <Link onClick={() => setIsSidebarOpen(false)} to="/login" className="block w-full text-center py-4 rounded-2xl border border-white/20 text-white font-black text-sm hover:bg-white/10 transition-all uppercase tracking-widest">Login</Link>
-              <Link onClick={() => setIsSidebarOpen(false)} to="/register" className="block w-full text-center py-4 rounded-2xl bg-red-600 text-white font-black text-sm shadow-xl shadow-red-600/20 hover:bg-red-700 transition-all uppercase tracking-widest">Join Identity</Link>
+              <Link onClick={() => setIsSidebarOpen(false)} to="/register" className="block w-full text-center py-4 rounded-2xl bg-red-600 text-white font-black text-sm shadow-xl shadow-red-600/20 hover:bg-red-700 transition-all uppercase tracking-widest">Sign Up</Link>
             </div>
           ) : (
             <div className="mt-8 space-y-2">

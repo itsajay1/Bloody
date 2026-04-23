@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 function Home() {
   return (
     <div className="max-w-7xl mx-auto py-20 px-4 sm:px-6 lg:px-8">
-      {/* Hero Section */}
+      {/* Donor Section */}
       <div className="text-center mb-24 animate-fade-in-up">
         <div className="inline-block px-4 py-1.5 rounded-full bg-red-50 border border-red-100 mb-6">
           <span className="text-[10px] font-black uppercase text-red-600 tracking-[0.2em]">Community Driven</span>
@@ -14,7 +14,7 @@ function Home() {
           <span className="text-gradient">Saves Lives</span>
         </h2>
         <p className="mt-8 max-w-2xl text-xl text-gray-500 mx-auto font-medium leading-relaxed">
-          The ultimate network connecting heroes with patients. <br className="hidden md:block"/>
+          The ultimate network connecting donors with patients. <br className="hidden md:block"/>
           Fast, secure, and purely humanitarian.
         </p>
       </div>
@@ -28,7 +28,7 @@ function Home() {
               <path d="M12 2c-4.42 0-8 3.58-8 8 0 5.42 7.17 11.42 7.48 11.67.15.12.33.18.52.18s.37-.06.52-.18c.31-.25 7.48-6.25 7.48-11.67 0-4.42-3.58-8-8-8z" />
             </svg>
           </div>
-          <h3 className="text-3xl font-black text-gray-900 mb-4 tracking-tight">Be a Hero</h3>
+          <h3 className="text-3xl font-black text-gray-900 mb-4 tracking-tight">Be a Donor</h3>
           <p className="text-gray-500 font-medium leading-relaxed mb-10 flex-grow">
             Join thousands of donors. Register securely and save lives in your neighborhood when every second counts.
           </p>

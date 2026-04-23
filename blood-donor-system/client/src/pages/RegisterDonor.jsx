@@ -132,7 +132,7 @@ function RegisterDonor() {
               <img src="/logo.png" alt="Lifeline Connect" className="w-full h-full object-contain" />
             </div>
             <h2 className="text-5xl sm:text-7xl font-black text-gray-900 mb-4 tracking-tighter leading-none animate-float" style={{ fontFamily: 'var(--font-heading)' }}>
-              {role === 'donor' ? 'Become a Hero' : 'Hospital Portal'}
+              {role === 'donor' ? 'Be a Donor' : 'Hospital Portal'}
             </h2>
             <p className="text-gray-500 font-medium text-lg leading-relaxed max-w-xl mx-auto">
               {role === 'donor' ? 'Join the global registry and give the ultimate gift of life.' : 'Register your medical facility to request blood instantly.'}
@@ -161,9 +161,9 @@ function RegisterDonor() {
 
           <form onSubmit={handleSubmit} className="space-y-12" noValidate>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-10 font-bold">
-              <InputField label="Full Name" name="name" value={formData.name} onChange={handleChange} error={errors.name} placeholder="Nexus Commander" />
-              <InputField label="Email" type="email" name="email" value={formData.email} onChange={handleChange} error={errors.email} placeholder="hero@lifeline.com" />
-              <InputField label="Secret Password" type="password" name="password" value={formData.password} onChange={handleChange} error={errors.password} placeholder="••••••••" className="tracking-widest" />
+              <InputField label="Full Name" name="name" value={formData.name} onChange={handleChange} error={errors.name} placeholder="Full Name" />
+              <InputField label="Email" type="email" name="email" value={formData.email} onChange={handleChange} error={errors.email} placeholder="Email Address" />
+              <InputField label="Secret Password" type="password" name="password" value={formData.password} onChange={handleChange} error={errors.password} placeholder="Password" className="tracking-widest" />
               
               {role === 'hospital' && (
                 <>
@@ -202,27 +202,25 @@ function RegisterDonor() {
             </div>
 
             {role === 'donor' && (
-              <div className="p-10 bg-gray-50/50 rounded-[2.5rem] border border-gray-100/50 space-y-8">
-                <div>
-                  <label className="block text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-4 ml-1">Last Vital Contribution (Optional)</label>
+              <div className="p-8 bg-gray-50/50 rounded-[2.5rem] border border-gray-100/50 grid grid-cols-1 md:grid-cols-2 gap-8 items-end">
+                <div className="relative">
+                  <label className="block text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-3 ml-1">Last Vital Contribution (Optional)</label>
                   <input
                     type="date"
                     name="lastDonationDate"
                     value={formData.lastDonationDate}
                     onChange={handleChange}
-                    className="w-full md:w-1/2 px-6 py-4 bg-white/80 border border-gray-100 rounded-2xl focus:ring-4 focus:ring-red-500/10 focus:border-red-500 transition-all font-black text-gray-900 cursor-pointer shadow-sm"
+                    className="w-full px-6 py-4 bg-white/80 border border-gray-100 rounded-2xl focus:ring-4 focus:ring-red-500/10 focus:border-red-500 transition-all font-black text-gray-900 cursor-pointer shadow-sm"
                   />
                 </div>
                 
-                <div className="flex items-center p-6 bg-white rounded-2xl border border-gray-100 shadow-[0_20px_40px_-15px_rgba(220,38,38,0.15)] cursor-pointer hover:border-red-200 transition-all group/check active:scale-[0.98]" onClick={() => setFormData(p => ({ ...p, available: !p.available }))}>
-                  <div className={`w-6 h-6 rounded-lg border-2 transition-all flex items-center justify-center ${formData.available ? 'bg-red-600 border-red-600' : 'bg-transparent border-gray-200 group-hover/check:border-red-400'}`}>
+                <div className="flex items-center p-5 bg-white rounded-2xl border border-gray-100 shadow-[0_15px_30px_-10px_rgba(220,38,38,0.1)] cursor-pointer hover:border-red-200 transition-all group/check active:scale-[0.98]" onClick={() => setFormData(p => ({ ...p, available: !p.available }))}>
+                  <div className={`shrink-0 w-6 h-6 rounded-lg border-2 transition-all flex items-center justify-center ${formData.available ? 'bg-red-600 border-red-600' : 'bg-transparent border-gray-200 group-hover/check:border-red-400'}`}>
                     {formData.available && <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="4" d="M5 13l4 4L19 7" /></svg>}
                   </div>
-                  <div className="ml-6">
-                    <label className="text-sm font-black text-gray-900 cursor-pointer tracking-tight">
-                      Ready for Active Duty
-                    </label>
-                    <p className="text-xs text-gray-400 mt-0.5 font-medium">Allow emergency requesters to discover your profile.</p>
+                  <div className="ml-4">
+                    <label className="text-xs font-black text-gray-900 cursor-pointer tracking-tight uppercase">Ready for Active Duty</label>
+                    <p className="text-[10px] text-gray-400 font-medium leading-none mt-1">Discoverable for emergency requests</p>
                   </div>
                 </div>
               </div>

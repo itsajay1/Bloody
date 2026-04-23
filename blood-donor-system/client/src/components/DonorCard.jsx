@@ -18,7 +18,7 @@ function DonorCard({ donor, isTopMatch }) {
             <span className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">
               {donor.distance !== undefined 
                 ? `${donor.distance.toFixed(1)} km away` 
-                : 'Nearby Hero'}
+                : 'Nearby Donor'}
             </span>
           </div>
         </div>
